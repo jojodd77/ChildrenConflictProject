@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: children-conflict-project
+    runtime: docker
+    plan: free
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://open.bigmodel.cn/api/paas/v4/
+      - key: OPENAI_MODEL
+        value: glm-4-flash

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>儿童社交冲突解决平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=58" />
+
+    <style>
+      /* ==========================================
+         【1. 首页排版修复】：图片回归，按钮不换行
+         ========================================== */
+      #screenHome.screen--active { display: flex; flex-direction: column; justify-content: center; }
+      .btn { white-space: nowrap !important; }
+      .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; }
+      .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
+      .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; box-shadow: 8px 8px 0px #FDE047; }
+
+      /* ==========================================
+         【2. 全屏加载与和好动画】
+         ========================================== */
+      .modal.loadingOverlay { position: fixed; inset: 0; z-index: 10001; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
+      .modal.loadingOverlay[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
+      .magic-spinner { font-size: 80px; animation: magicWand 2.5s infinite linear; margin-bottom: 24px; }
+      .loading-text { font-size: 18px; font-weight: 700; color: #D97706; text-align: center; }
+      @keyframes magicWand { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
+
+      #celebrationOverlay { position: fixed; inset: 0; z-index: 9999; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
+      #celebrationOverlay.show { opacity: 1; pointer-events: auto; }
+      @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+      @keyframes floatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+      .celeb-icon { font-size: 100px; animation: popIn 0.6s ease forwards, floatBounce 2s ease-in-out infinite 0.6s; }
+      .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
+
+      /* ==========================================
+         【3. 语音控制与卡片UI】
+         ========================================== */
+      .btn--mic, .btn--speak { padding: 8px; border-radius: 50%; background: var(--secondary); border: none; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+      .btn--mic { color: var(--primary); }
+      .btn--mic:hover, .btn--speak:hover { background: #DBEAFE; transform: scale(1.1); }
+      .btn--mic.recording { background: var(--danger); color: white; animation: pulse 1s infinite; }
+      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+      .btn-sound { background: rgba(255,255,255,0.5); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+      .btn-sound:hover { background: rgba(255,255,255,0.9); transform: scale(1.1); }
+      .btn-sound.playing { background: #FDE047; animation: soundPulse 1.5s infinite; }
+      @keyframes soundPulse { 0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.6); } 70% { box-shadow: 0 0 0 8px rgba(253, 224, 71, 0); } 100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); } }
+
+      .composer__row { display: flex; gap: 8px; align-items: center; width: 100%; }
+      .composer__row .btn--mic { flex-shrink: 0; width: 44px; height: 44px; padding: 0; }
+      .composer__row .input { flex: 1; }
+      .composer__row .btn--primary { flex-shrink: 0; }
+
+      .heart-match-container { border-width: 3px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+      .heart-track { height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
+      .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); text-shadow: 0 4px 6px rgba(0,0,0,0.15); z-index: 5; }
+      .heart-left { left: 0%; }
+      .heart-right { right: 0%; }
+      .match-text { font-size: 24px; font-weight: 900; margin-top: 10px; }
+      .match-subtext { font-size: 16px; font-weight: 700; margin-top: 5px; margin-bottom: 15px; }
+
+      .typing-indicator { display: none; padding: 12px 16px; background: #FEF3C7; border-radius: 12px; font-size: 14px; color: #B45309; align-items: center; gap: 8px; width: fit-content; margin: 10px 0; border: 2px solid #1E293B; }
+      .typing-indicator.active { display: flex; }
+      .dots span { display: inline-block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+      .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
+
+      /* ==========================================
+         【4. 完美复刻精美蓝色弹窗 UI (已修改为蓝色系)】
+         ========================================== */
+      .report-card-super { background: #BFDBFE; border: 4px solid #2B3245; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 8px 0 #2B3245; }
+      .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+      .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 600; }
+      .super-badges { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
+      .super-badge-item { background: white; padding: 8px 20px; border-radius: 30px; font-weight: 900; color: #2563EB; border: 2px solid #93C5FD; box-shadow: 0 4px 0 #93C5FD; }
+      .super-tip-box { background: #EFF6FF; padding: 15px; border-radius: 12px; margin: 20px 0; font-size: 14px; text-align: left; color: #1E3A8A; border: 2px dashed #60A5FA; line-height: 1.6; }
+      .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
+      .super-btn { border-radius: 30px; padding: 12px 24px; font-weight: 900; font-size: 16px; border: 3px solid #2B3245; box-shadow: 0 4px 0 #2B3245; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+      .super-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #2B3245; }
+      .super-btn-ghost { background: white; color: #2563EB; }
+      .super-btn-primary { background: #2563EB; color: white; }
+
+      /* ==========================================
+         【5. 终极修复：聊天气泡完美左右对齐】
+         ========================================== */
+      /* 强制覆盖外部样式表可能存在的错位配置 */
+      .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: flex-start !important; }
+      .msg--right { flex-direction: row-reverse !important; }
+      .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; font-weight: 900 !important; border: 2px solid #064E3B !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0; }
+      .avatar--a, .avatar--b { flex-shrink: 0; }
+
+      /* 新增的包裹容器，负责挤压气泡贴靠头像 */
+      .msg-content-wrap { display: flex; flex-direction: column; max-width: 85%; }
+      .msg:not(.msg--right) .msg-content-wrap { align-items: flex-start; }
+      .msg--right .msg-content-wrap { align-items: flex-end; }
+
+      .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; }
+    </style>
+  </head>
+  <body>
+    <div id="globalLoading" class="modal loadingOverlay" aria-hidden="true">
+        <div class="magic-spinner">✨</div>
+        <div class="loading-text">法官精灵正在为你编织故事剧本，请稍等...</div>
+    </div>
+
+    <div id="celebrationOverlay">
+        <div class="celeb-icon">👦🤝👧💖🌸✨</div>
+        <div class="celeb-text">心心相印！太棒了，误会解除啦！</div>
+    </div>
+
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand__mark" aria-hidden="true">法</div>
+          <div class="brand__text">
+            <div class="brand__title">儿童社交魔法屋</div>
+            <div class="brand__sub">用魔法打败误会 · 语音输入 · 心心相印</div>
+          </div>
+        </div>
+        <div class="topbar__right">
+          <div class="chip" id="chipRole">未选择身份</div>
+          <button class="btn btn--ghost" id="btnReset" type="button">退出</button>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="screen screen--active" id="screenHome" aria-label="首页">
+          <div class="card hero">
+            <div class="hero__left">
+              <h1 class="hero__title">请先选择你的身份</h1>
+              <p class="hero__desc">建议打开两个标签页（或两台设备）：一个选 <strong>身份A</strong>，另一个选 <strong>身份B</strong>，它们会在同一“会话码”里联动同步。</p>
+
+              <div class="session">
+                <label class="field">
+                  <span class="field__label">会话码（用于两端联动）</span>
+                  <div class="field__row" style="display: flex; gap: 8px;">
+                    <input class="input" id="sessionCode" autocomplete="off" spellcheck="false" />
+                    <button class="btn btn--ghost" id="btnNewSession" type="button">🎲 随机生成</button>
+                  </div>
+                </label>
+              </div>
+
+              <div class="actions">
+                <button class="btn btn--primary" id="btnChooseA" type="button">选择身份 A（先发言）</button>
+                <button class="btn btn--secondary" id="btnChooseB" type="button">选择身份 B（等待）</button>
+              </div>
+            </div>
+
+            <div class="hero__right" aria-hidden="true">
+              <div class="hero__image-container">
+                <img src="/static/img/story_illustration.png" class="hero__image" alt="沟通与理解儿童插画" onerror="this.src='https://via.placeholder.com/360x360.png?text=请将图片放入img文件夹'" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screenChat" aria-label="对话页">
+          <div class="layout layout--stack">
+            <section class="content content--stack">
+              <div class="card card--tight contextCard">
+                <div class="card__title" style="display:flex; justify-content:space-between; align-items:center;">
+                   <span>📖 本次情境</span>
+                   <button class="btn btn--speak" style="font-size: 12px; padding: 4px 8px; border-radius: 8px;" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停">🔊 读给我听</button>
+                </div>
+                <div class="story" id="storyText"></div>
+                <div class="divider"></div>
+                <div class="systemNotice" id="systemNotice"></div>
+              </div>
+
+              <div class="card chatCard">
+                <div class="chatHeader">
+                  <div class="chatHeader__left">
+                    <div class="chatHeader__title">对话区</div>
+                    <div class="chatHeader__meta" id="chatMeta">会话未连接</div>
+                  </div>
+                  <div class="chatHeader__right">
+                    <div class="presence" id="presence">
+                      <span class="presence__dot"></span>
+                      <span class="presence__text">对方未就绪</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="chat" id="chatLog" aria-live="polite"></div>
+
+                <div style="padding: 0 16px;">
+                    <div class="typing-indicator" id="typingIndicator">
+                       <div class="avatar avatar--j" style="width:24px; height:24px; border: 2px solid #1E293B; background: #A7F3D0; display:flex; align-items:center; justify-content:center;">
+                           <span style="color:#064E3B; font-weight:900; font-size:12px;">法</span>
+                       </div>
+                       法官精灵正在努力思考中... <div class="dots"><span></span><span></span><span></span></div>
+                    </div>
+                </div>
+
+                <div class="composer">
+                  <div id="negotiateActions" style="display: none; padding-bottom: 12px; text-align: center;">
+                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: var(--good); border-color: var(--good); color: white; width: 100%;">🤝 我们商量好了 (点击拉钩)</button>
+                  </div>
+                  <div class="composer__row">
+                    <button class="btn btn--mic" id="btnMicChat" title="长按说话">🎤</button>
+                    <input class="input input--big" id="composerInput" placeholder="打字或长按左侧麦克风说话…" autocomplete="off" />
+                    <button class="btn btn--primary" id="btnSend" type="button">发送</button>
+                  </div>
+                  <div class="composer__sub" id="composerSub"></div>
+                </div>
+              </div>
+              <div style="height: 40px; flex: none;"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal__backdrop" data-close="true"></div>
+      <div class="modal__panel" role="document">
+        <div class="modal__header">
+          <div class="modal__title" id="modalTitle">标题</div>
+          <button class="iconBtn" id="modalClose" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="modal__body">
+          <div class="modal__desc" id="modalDesc" style="margin-bottom: 12px;"></div>
+          <label class="field">
+            <span class="field__label" id="modalFieldLabel">请打字或长按麦克风语音输入：</span>
+            <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 8px;">
+              <button class="btn btn--mic" id="btnMicModal" title="长按说话" style="margin-top: 5px;">🎤</button>
+              <textarea class="textarea" id="modalText" rows="4" placeholder="在这里输入..."></textarea>
+            </div>
+          </label>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--ghost" id="modalCancel" type="button">稍后</button>
+          <button class="btn btn--primary" id="modalSubmit" type="button">✨ 提交我的想法</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="finishModal" aria-hidden="true" role="dialog" aria-modal="true" style="z-index: 10000;">
+      <div class="modal__backdrop"></div>
+      <div class="modal__panel" role="document" style="background: transparent; box-shadow: none;">
+        <div class="report-card-super">
+          <h2>🏆 调解大成功！</h2>
+          <p>你们通过沟通解开了误会，真是太棒了！</p>
+
+          <div class="super-badges">
+            <div class="super-badge-item">👂 倾听小达人</div>
+            <div class="super-badge-item">🗣️ 表达小天才</div>
+            <div class="super-badge-item">🤝 和平使者</div>
+          </div>
+
+          <div class="super-tip-box">
+            <strong>💡 法官精灵的悄悄话：</strong><br>
+            遇到矛盾时，深呼吸，勇敢说出“我需要什么”，而不是直接发脾气。你们今天做得非常好，继续保持哦！
+          </div>
+
+          <div class="super-btn-group">
+              <button class="super-btn super-btn-ghost" id="btnReviewChat">复盘聊天</button>
+              <button class="super-btn super-btn-primary" id="btnReturnHome">再玩一次</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const $ = (id) => document.getElementById(id);
+
+        const screenHome = $("screenHome");
+        const screenChat = $("screenChat");
+        const chipRole = $("chipRole");
+        const btnReset = $("btnReset");
+
+        const sessionCodeInput = $("sessionCode");
+        const btnNewSession = $("btnNewSession");
+        const btnChooseA = $("btnChooseA");
+        const btnChooseB = $("btnChooseB");
+
+        const storyText = $("storyText");
+        const systemNotice = $("systemNotice");
+        const chatMeta = $("chatMeta");
+        const presence = $("presence");
+        const chatLog = $("chatLog");
+        const composerInput = $("composerInput");
+        const btnSend = $("btnSend");
+        const composerSub = $("composerSub");
+
+        const negotiateActions = $("negotiateActions");
+        const btnAgree = $("btnAgree");
+        const finishModal = $("finishModal");
+        const btnReviewChat = $("btnReviewChat");
+        const btnReturnHome = $("btnReturnHome");
+
+        const modal = $("modal");
+        const modalClose = $("modalClose");
+        const modalCancel = $("modalCancel");
+        const modalSubmit = $("modalSubmit");
+        const modalTitle = $("modalTitle");
+        const modalDesc = $("modalDesc");
+        const modalText = $("modalText");
+
+        const globalLoading = $("globalLoading");
+
+        const appState = { code: "", role: null };
+        let syncInterval = null;
+        let currentSessionData = null;
+
+        // 语音引擎
+        let preferredVoice = null;
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            if (!voices.length) return;
+            const cnVoices = voices.filter(v => v.lang.toLowerCase().includes('zh') && !v.lang.toLowerCase().includes('hk') && !v.lang.toLowerCase().includes('tw') && !v.name.toLowerCase().includes('cantonese') && !v.name.toLowerCase().includes('sin-ji'));
+            if (!cnVoices.length) return;
+            const getScore = (voice) => { let name = voice.name.toLowerCase(); if (name.includes('xiaoxiao')) return 100; if (name.includes('natural')) return 90; if (name.includes('google')) return 80; if (name.includes('huihui')) return 60; return 0; };
+            cnVoices.sort((a, b) => getScore(b) - getScore(a));
+            preferredVoice = cnVoices[0];
+        }
+        if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = loadVoices; }
+        setTimeout(loadVoices, 100);
+
+        window.currentSpeakingBtn = null;
+        window.speakText = (text, btnElement) => {
+            if (!('speechSynthesis' in window)) return alert("你的浏览器不支持语音朗读哦~");
+            if (speechSynthesis.speaking && window.currentSpeakingBtn === btnElement) { speechSynthesis.cancel(); if(btnElement) { btnElement.innerHTML = btnElement.dataset.origText || '🔊'; btnElement.classList.remove('playing'); } window.currentSpeakingBtn = null; return; }
+            speechSynthesis.cancel(); if (window.currentSpeakingBtn) { window.currentSpeakingBtn.innerHTML = window.currentSpeakingBtn.dataset.origText || '🔊'; window.currentSpeakingBtn.classList.remove('playing'); }
+            const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'zh-CN'; if (preferredVoice) utterance.voice = preferredVoice; utterance.rate = 0.9; utterance.pitch = 1.1;
+            utterance.onend = utterance.onerror = () => { if(btnElement) { btnElement.innerHTML = btnElement.dataset.origText || '🔊'; btnElement.classList.remove('playing'); } window.currentSpeakingBtn = null; };
+            speechSynthesis.speak(utterance);
+            if(btnElement) { if (!btnElement.dataset.origText) btnElement.dataset.origText = btnElement.innerHTML; btnElement.innerHTML = '⏸️'; btnElement.classList.add('playing'); window.currentSpeakingBtn = btnElement; }
+        };
+
+        // ==========================================
+        // 【升级版 语音识别系统】：开启实时上屏，防断触，显性报错
+        // ==========================================
+        const setupSpeechRecognition = (btnId, inputId) => {
+            const btn = $(btnId); const input = $(inputId);
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { btn.style.display = 'none'; return; }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'zh-CN';
+            recognition.continuous = false;
+            recognition.interimResults = true; // 【核心修正：开启实时上屏，边说边出字】
+
+            let originalValue = "";
+
+            recognition.onstart = () => {
+                btn.classList.add("recording");
+                input.placeholder = "正在听你说话...";
+                originalValue = input.value; // 保存说话前框里的文字
+            };
+
+            recognition.onresult = (event) => {
+                let interim = "";
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    interim += event.results[i][0].transcript;
+                }
+                input.value = originalValue + interim; // 实时叠加文字
+            };
+
+            recognition.onerror = (event) => {
+                console.error("语音识别错误:", event.error);
+                if(event.error === 'not-allowed') {
+                    input.placeholder = "⚠️ 麦克风受限，请看弹窗提示";
+                    alert("【麦克风权限被拦截！】\n\n1. 请检查浏览器地址栏左侧，是否允许了麦克风。\n2. 浏览器的安全机制要求：如果是局域网访问，必须通过 http://127.0.0.1:5000 或 https 安全链接，否则麦克风无法开启！");
+                } else {
+                    input.placeholder = "没听清，请再按住说一次...";
+                }
+            };
+
+            recognition.onend = () => {
+                btn.classList.remove("recording");
+                input.placeholder = "打字或长按左侧麦克风说话...";
+            };
+
+            const startRecord = (e) => { e.preventDefault(); try { recognition.start(); } catch(err){} };
+            const stopRecord = (e) => { e.preventDefault(); try { recognition.stop(); } catch(err){} };
+
+            btn.onmousedown = startRecord; btn.ontouchstart = startRecord;
+            btn.onmouseup = stopRecord; btn.ontouchend = stopRecord; btn.onmouseleave = stopRecord;
+        };
+
+        setupSpeechRecognition('btnMicChat', 'composerInput');
+        setupSpeechRecognition('btnMicModal', 'modalText');
+
+        function randomCode() { const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let out = ""; for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)]; return out; }
+        function setActiveScreen(which) { screenHome.classList.remove("screen--active"); screenChat.classList.remove("screen--active"); if (which === "home") screenHome.classList.add("screen--active"); if (which === "chat") screenChat.classList.add("screen--active"); }
+        function setRoleChip(role) { if (!role) { chipRole.textContent = "未选择身份"; chipRole.style.opacity = "0.9"; return; } chipRole.textContent = `当前身份：${role}`; chipRole.style.opacity = "1"; }
+        function setPresence(ready, text) { presence.dataset.ready = ready ? "true" : "false"; presence.querySelector(".presence__text").textContent = text; presence.querySelector(".presence__dot").style.background = ready ? "var(--good)" : "#94A3B8"; }
+        function escapeHtml(s) { return String(s).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;").replaceAll("\n", " "); }
+
+        function renderHeartCard(result) {
+            if (!result) return "";
+            const score = Math.max(0, Math.min(100, Math.round(result.misinterpretation * 100))); const matchPercent = 100 - score; const offset = (score / 2);
+            let theme = {}; let title = "";
+            if (matchPercent > 70) { title = "太棒了，你们的心贴得很近！"; theme = { bg: '#F0FDF4', border: '#6EE7B7', text: '#047857', lightText: '#065F46' }; }
+            else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#FFFBEB', border: '#FCD34D', text: '#B45309', lightText: '#D97706' }; }
+            else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', border: '#FCA5A5', text: '#B91C1C', lightText: '#DC2626' }; }
+
+            const guidance = result.guidance ? `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.guidance)}', this)">🔊</button><div style="flex:1; padding-top:4px;"><strong>给你的悄悄话：</strong>${result.guidance}</div></div>` : '';
+            const comfort = result.comfort ? `<div style="display:flex; align-items:flex-start; gap:8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.comfort)}', this)">🔊</button><div style="flex:1; padding-top:4px;"><strong>给对方的安抚：</strong>${result.comfort}</div></div>` : '';
+
+            return `
+              <div class="heart-match-container" style="background-color: ${theme.bg}; border-color: ${theme.border};">
+                <div style="font-size:14px; color:${theme.text}; margin-bottom:10px; font-weight:bold;">💖 心心匹配度检测完成</div>
+                <div class="heart-track">
+                    <div class="heart heart-left" style="left: ${40 - offset}%">👦</div>
+                    <div class="heart heart-right" style="right: ${40 - offset}%">👧</div>
+                </div>
+                <div class="match-text" style="color:${theme.text};">想法匹配度：${matchPercent}%</div>
+                <div class="match-subtext" style="color: ${theme.lightText};">${title}</div>
+                <hr style="margin: 15px 0; border: none; border-top: 1px dashed ${theme.border};">
+                <div style="text-align:left; font-size: 14px; color: ${theme.text}; line-height:1.6;">
+                    ${appState.role === result.triggeredBy ? guidance : comfort}
+                </div>
+              </div>
+            `;
+        }
+
+        function pushMsg({ from, text, kind = "chat", extra = null }) {
+          const isSelf = from === appState.role;
+          const displayFrom = (kind === "system" || from === "J" || from === "system") ? "J" : from;
+
+          const row = document.createElement("div");
+          row.className = "msg" + (isSelf && displayFrom !== "J" ? " msg--right" : "");
+
+          const avatar = document.createElement("div");
+          avatar.className = "avatar " + (displayFrom === "A" ? "avatar--a" : displayFrom === "B" ? "avatar--b" : "avatar--j");
+          avatar.innerHTML = `<span style="display: block; color: #1E293B !important; font-weight: 900 !important; font-size: 16px !important;">${displayFrom === "J" ? "法" : displayFrom}</span>`;
+
+          const contentWrap = document.createElement("div");
+          contentWrap.className = "msg-content-wrap";
+
+          if (kind === "judgeCard") {
+            contentWrap.innerHTML = renderHeartCard(extra);
+          } else {
+            const bubbleClass = displayFrom === "A" ? "bubble--a" : displayFrom === "B" ? "bubble--b" : "bubble--j";
+            const safeText = escapeHtml(text);
+            contentWrap.innerHTML = `
+                <div class="bubble ${bubbleClass}">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+                        <div style="flex: 1; text-align: left;">${safeText}</div>
+                        <button class="btn-sound" onclick="window.speakText('${safeText}', this)" title="朗读/暂停">🔊</button>
+                    </div>
+                </div>`;
+          }
+
+          row.appendChild(avatar);
+          row.appendChild(contentWrap);
+          chatLog.appendChild(row);
+          chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function renderSession(session) {
+          if (!session) return;
+          if (session.scenario && globalLoading.getAttribute("aria-hidden") === "false") { globalLoading.setAttribute("aria-hidden", "true"); setActiveScreen("chat"); }
+          const ready = session.participants.A && session.participants.B; setPresence(ready, ready ? "对方已加入" : "等待对方加入...");
+          if (session.scenario) { storyText.textContent = appState.role === "A" ? session.scenario.storyA : session.scenario.storyB; systemNotice.textContent = session.scenario.systemRule.replace("{arousal}", appState.role==="A"?"高":"低").replace(/{who}/g, appState.role==="A"?"你（A）":"对方（A）").replace(/{A}/g, appState.role==="A"?"你（A）":"对方（A）"); $("chatMeta").textContent = `会话码：${session.code} · 情境：${session.scenario.title}`; }
+
+          chatLog.innerHTML = "";
+          for (const item of session.chat) {
+              if (item.target && item.target !== appState.role) continue;
+              if (item.kind === "judgeCard") { pushMsg({ from: "J", text: "", kind: "judgeCard", extra: item.extra }); }
+              else if (item.kind === "system") { pushMsg({ from: "J", text: item.text, kind: "system", meta: item.meta || "" }); }
+              else { pushMsg({ from: item.from, text: item.text, kind: item.kind, extra: item.extra }); }
+          }
+
+          const frozen = session.freeze.active; const phase = session.freeze.phase; const aHasSpoken = session.chat.filter(m => m.from === "A").length > 0;
+          const disabled = !ready || frozen || phase === "finished" || (appState.role === "B" && !aHasSpoken && phase === "idle") || !session.scenario;
+          btnSend.disabled = disabled; composerInput.disabled = disabled; $("btnMicChat").disabled = disabled;
+          negotiateActions.style.display = (phase === "negotiate" && !session.agreed[appState.role]) ? "block" : "none";
+          $("typingIndicator").classList.toggle("active", frozen && session.freeze.aMotivation && session.freeze.bGuess && !session.freeze.result);
+
+          if (!ready) { composerSub.textContent = "等待对方加入..."; }
+          else if (!session.scenario) { composerSub.textContent = "精灵正在编织剧本，请稍候..."; }
+          else if (frozen && phase === "collecting") {
+              composerSub.textContent = "对话已暂停，请在弹窗中说出你的想法。";
+              if (modal.getAttribute("aria-hidden") !== "false") {
+                  const triggeredByMe = session.freeze.triggeredBy === appState.role;
+                  if (triggeredByMe && !session.freeze.aMotivation) { modalTitle.textContent = "刚才发火真实的出发点是？"; modalDesc.textContent = "请对着麦克风说说，你刚才为什么那么着急？"; modal.dataset.mode = "aMotivation"; modal.setAttribute("aria-hidden", "false"); }
+                  else if (!triggeredByMe && !session.freeze.bGuess) { setTimeout(() => { modalTitle.textContent = "你觉得对方为什么生气？"; modalDesc.textContent = "猜猜看，对方遇到了什么困难？按住麦克风说出来吧！"; modal.dataset.mode = "bGuess"; modal.setAttribute("aria-hidden", "false"); }, 1000); }
+              }
+          }
+          else if (phase === "rephrase") {
+              if (session.freeze.triggeredBy === appState.role) { composerSub.textContent = "请按照精灵的提示，重新好好说一句话吧！"; }
+              else { composerSub.textContent = "等待对方重新整理语言中..."; btnSend.disabled = true; composerInput.disabled = true; $("btnMicChat").disabled = true; }
+              if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; }
+          }
+          else if (phase === "negotiate") {
+              composerSub.textContent = "你们的想法对齐啦！商量好后点击上方【达成一致】！";
+              if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; }
+          }
+          else if (phase === "finished") {
+              if ($("celebrationOverlay").classList.contains("show") === false && finishModal.getAttribute("aria-hidden") === "true") {
+                  const overlay = $("celebrationOverlay");
+                  overlay.classList.add("show");
+                  setTimeout(() => {
+                      overlay.classList.remove("show");
+                      setTimeout(() => { finishModal.setAttribute("aria-hidden", "false"); }, 500);
+                  }, 3000);
+              }
+          }
+          else { composerSub.textContent = ""; if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; } }
+        }
+
+        function startSync() {
+            if (syncInterval) clearInterval(syncInterval);
+            syncInterval = setInterval(async () => {
+                if (!appState.code) return;
+                try { const res = await fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({code: appState.code}) }); const data = await res.json(); if (JSON.stringify(data) !== JSON.stringify(currentSessionData)) { currentSessionData = data; renderSession(data); } } catch(e) {}
+            }, 1000);
+        }
+
+        async function join(role) {
+          appState.code = (sessionCodeInput.value || randomCode()).trim().toUpperCase(); sessionCodeInput.value = appState.code; appState.role = role; setRoleChip(role);
+          try {
+              globalLoading.setAttribute("aria-hidden", "false");
+              await fetch('/api/join', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ code: appState.code, role }) });
+              startSync();
+          } catch (e) { globalLoading.setAttribute("aria-hidden", "true"); alert("网络错误"); }
+        }
+
+        btnChooseA.onclick = () => join("A"); btnChooseB.onclick = () => join("B"); btnNewSession.onclick = () => sessionCodeInput.value = randomCode();
+        btnSend.onclick = async () => { const text = composerInput.value.trim(); if (!text) return; composerInput.value = ""; $("typingIndicator").classList.add("active"); await fetch('/api/send_message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text }) }); };
+        composerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (!btnSend.disabled) btnSend.click(); } });
+        modalSubmit.onclick = async () => { const text = modalText.value.trim(); if (!text) return alert("要说点什么才能提交哦！"); modal.setAttribute("aria-hidden", "true"); modalText.value = ""; $("typingIndicator").classList.add("active"); await fetch('/api/submit_freeze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text, mode: modal.dataset.mode }) }); };
+        modalClose.onclick = modalCancel.onclick = () => { modal.setAttribute("aria-hidden", "true"); modalText.value=""; }
+        btnAgree.onclick = async () => { btnAgree.disabled = true; await fetch('/api/agree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role }) }); };
+        btnReviewChat.onclick = () => finishModal.setAttribute("aria-hidden", "true");
+        btnReturnHome.onclick = btnReset.onclick = () => location.reload();
+        sessionCodeInput.value = randomCode();
+      })();
+    </script>
+  </body>
+</html>
