@@ -86,13 +86,11 @@
       /* ==========================================
          【5. 终极修复：聊天气泡完美左右对齐】
          ========================================== */
-      /* 强制覆盖外部样式表可能存在的错位配置 */
       .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: flex-start !important; }
       .msg--right { flex-direction: row-reverse !important; }
       .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; font-weight: 900 !important; border: 2px solid #064E3B !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0; }
       .avatar--a, .avatar--b { flex-shrink: 0; }
 
-      /* 新增的包裹容器，负责挤压气泡贴靠头像 */
       .msg-content-wrap { display: flex; flex-direction: column; max-width: 85%; }
       .msg:not(.msg--right) .msg-content-wrap { align-items: flex-start; }
       .msg--right .msg-content-wrap { align-items: flex-end; }
@@ -200,8 +198,8 @@
                     <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: var(--good); border-color: var(--good); color: white; width: 100%;">🤝 我们商量好了 (点击拉钩)</button>
                   </div>
                   <div class="composer__row">
-                    <button class="btn btn--mic" id="btnMicChat" title="长按说话">🎤</button>
-                    <input class="input input--big" id="composerInput" placeholder="打字或长按左侧麦克风说话…" autocomplete="off" />
+                    <button class="btn btn--mic" id="btnMicChat" title="点击麦克风开始录音">🎤</button>
+                    <input class="input input--big" id="composerInput" placeholder="打字或点击左侧麦克风说话…" autocomplete="off" />
                     <button class="btn btn--primary" id="btnSend" type="button">发送</button>
                   </div>
                   <div class="composer__sub" id="composerSub"></div>
@@ -224,9 +222,9 @@
         <div class="modal__body">
           <div class="modal__desc" id="modalDesc" style="margin-bottom: 12px;"></div>
           <label class="field">
-            <span class="field__label" id="modalFieldLabel">请打字或长按麦克风语音输入：</span>
+            <span class="field__label" id="modalFieldLabel">请打字或点击麦克风语音输入：</span>
             <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 8px;">
-              <button class="btn btn--mic" id="btnMicModal" title="长按说话" style="margin-top: 5px;">🎤</button>
+              <button class="btn btn--mic" id="btnMicModal" title="点击麦克风开始录音" style="margin-top: 5px;">🎤</button>
               <textarea class="textarea" id="modalText" rows="4" placeholder="在这里输入..."></textarea>
             </div>
           </label>
@@ -333,7 +331,7 @@
         };
 
         // ==========================================
-        // 【升级版 语音识别系统】：开启实时上屏，防断触，显性报错
+        // 【彻底解决】：抛弃难用的长按，改为“点击录音、再点停止”
         // ==========================================
         const setupSpeechRecognition = (btnId, inputId) => {
             const btn = $(btnId); const input = $(inputId);
@@ -342,15 +340,26 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
             recognition.lang = 'zh-CN';
-            recognition.continuous = false;
-            recognition.interimResults = true; // 实时反馈
+            recognition.continuous = true; // 允许持续说话，中途喘气不会断
+            recognition.interimResults = true; // 实时上屏
 
+            let isRecording = false;
             let originalValue = "";
 
-            recognition.onstart = () => {
+            // 无论发生什么，瞬间恢复图标状态
+            const stopRecordingUI = () => {
+                isRecording = false;
+                btn.classList.remove("recording");
+                input.placeholder = "打字或点击麦克风说话...";
+                try { recognition.stop(); } catch(e) {}
+            };
+
+            const startRecording = () => {
+                isRecording = true;
                 btn.classList.add("recording");
-                input.placeholder = "正在听你说话...";
-                originalValue = input.value; // 保存说话前框里的文字
+                originalValue = input.value; 
+                input.placeholder = "🔴 正在听你说... (说完请再次点击麦克风停止)";
+                try { recognition.start(); } catch(e) {}
             };
 
             recognition.onresult = (event) => {
@@ -363,24 +372,22 @@
 
             recognition.onerror = (event) => {
                 console.error("语音识别错误:", event.error);
-                if(event.error === 'not-allowed') {
-                    input.placeholder = "⚠️ 麦克风受限，请看弹窗提示";
-                    alert("【麦克风权限被拦截！】\n\n1. 请检查浏览器地址栏左侧，是否允许了麦克风。\n2. 浏览器的安全机制要求：如果是局域网访问，必须通过 http://127.0.0.1:5000 或 https 安全链接，否则麦克风无法开启！");
-                } else {
-                    input.placeholder = "没听清，请再按住说一次...";
-                }
+                stopRecordingUI();
             };
 
             recognition.onend = () => {
-                btn.classList.remove("recording");
-                input.placeholder = "打字或长按左侧麦克风说话...";
+                stopRecordingUI();
             };
 
-            const startRecord = (e) => { e.preventDefault(); try { recognition.start(); } catch(err){} };
-            const stopRecord = (e) => { e.preventDefault(); try { recognition.stop(); } catch(err){} };
-
-            btn.onmousedown = startRecord; btn.ontouchstart = startRecord;
-            btn.onmouseup = stopRecord; btn.ontouchend = stopRecord; btn.onmouseleave = stopRecord;
+            // 【核心】：只绑定点击事件，点一下开，再点一下关！
+            btn.onclick = (e) => {
+                e.preventDefault();
+                if (isRecording) {
+                    stopRecordingUI(); // 如果正在录，立刻手动停止并恢复UI
+                } else {
+                    startRecording(); // 如果没在录，开始录
+                }
+            };
         };
 
         setupSpeechRecognition('btnMicChat', 'composerInput');
@@ -481,20 +488,19 @@
               if (modal.getAttribute("aria-hidden") !== "false") {
                   const triggeredByMe = session.freeze.triggeredBy === appState.role;
                   
-                  // 【新增】：提取原话，并在弹窗中加上红色高亮提示框
                   const triggerTxt = session.freeze.triggerText || "刚才说的话";
                   const blockquoteHtml = `<div style="background: #FEE2E2; border-left: 4px solid #EF4444; padding: 12px; margin: 12px 0; border-radius: 8px; color: #991B1B; font-weight: 700; font-size: 15px; text-align: left;">"${escapeHtml(triggerTxt)}"</div>`;
 
                   if (triggeredByMe && !session.freeze.aMotivation) { 
                       modalTitle.textContent = "刚才发火真实的出发点是？"; 
-                      modalDesc.innerHTML = `你刚才说：${blockquoteHtml}请对着麦克风说说，你刚才为什么那么着急？`; 
+                      modalDesc.innerHTML = `你刚才说：${blockquoteHtml}请点击麦克风说说，你刚才为什么那么着急？`; 
                       modal.dataset.mode = "aMotivation"; 
                       modal.setAttribute("aria-hidden", "false"); 
                   }
                   else if (!triggeredByMe && !session.freeze.bGuess) { 
                       setTimeout(() => { 
                           modalTitle.textContent = "你觉得对方为什么生气？"; 
-                          modalDesc.innerHTML = `对方刚才说：${blockquoteHtml}猜猜看，对方遇到了什么困难？按住麦克风说出来吧！`; 
+                          modalDesc.innerHTML = `对方刚才说：${blockquoteHtml}猜猜看，对方遇到了什么困难？点击麦克风说出来吧！`; 
                           modal.dataset.mode = "bGuess"; 
                           modal.setAttribute("aria-hidden", "false"); 
                       }, 1000); 
