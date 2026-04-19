@@ -24,9 +24,7 @@ UPSTASH_TOKEN = "AZ3JAAIncDFkZTI3YTc0N2VlZmM0ZGM2OTY2ZDYxNmRiNDUyNjAxNXAxNDAzOTM
 def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3):
     try:
         print(f"\n[{agent_name}] 正在思考中...")
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("缺少环境变量 OPENAI_API_KEY，请在部署平台中配置。")
+        api_key = "b8a447348756415ca41e21d50dfd7984.HmPlU26ZFtipn5La"
 
         client = OpenAI(
             api_key=api_key,
