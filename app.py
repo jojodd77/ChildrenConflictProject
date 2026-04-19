@@ -304,36 +304,39 @@ def submit_freeze():
                 "triggeredBy": triggered_by
             }
         else:
+            # =======================================================
+            # 【这里是唯一的改动】：防大模型抄作业，强制它自己算分数！
+            # =======================================================
             agent34_prompt = f"""
             你现在同时扮演【裁判Agent】和【引导Agent】。
 
             发火方填写的真实动机："{a_motivation_str}"
             被骂方猜测的动机："{b_guess_str}"
 
-            【计算分数】：
-            - 0.0 到 0.3：猜测准确（低风险）。
-            - 0.4 到 0.6：猜对一半，有偏差（中风险）。
-            - 0.7 到 1.0：完全猜错，充满恶意（高风险）。
+            【计算误解分数(misinterpretation)】：
+            请你仔细对比以上两句话，判断猜测偏离了多少：
+            - 0.0 到 0.3：猜测非常准确，完全理解了对方的困难（低风险）。
+            - 0.4 到 0.6：猜对了一部分，但有偏差（中风险）。
+            - 0.7 到 1.0：完全猜错，且带有恶意揣测（高风险）。
 
-            【确定流程】：
-            - 如果分数 > 0.3：route 为 "rephrase"。撰写 guidance 和 comfort。
-            - 如果分数 <= 0.3：route 为 "negotiate"。"guidance"和"comfort"留空。
+            【确定流程(route)】：
+            - 如果分数 > 0.3：route 为 "rephrase"。必须撰写 guidance 和 comfort。
+            - 如果分数 <= 0.3：route 为 "negotiate"。guidance 和 comfort 留空。
 
-            【话术规范 (绝对禁令)】：绝不能出现“发火方”、“被骂方”这样的词！必须像老师一样直接对他们说话（如：我知道你现在很着急...）。
+            【话术规范 (绝对禁令)】：绝不能出现“发火方”、“被骂方”这样的词！必须像老师一样温柔地直接对他们说话（如：我知道你现在很着急...）。
 
-            第一步："reasoning"中写推理。
-            第二步：输出JSON：
+            严格输出以下JSON格式（绝对不准盲目照抄示例分数，必须填入你真实计算的浮点数！）：
             {{
-                "reasoning": "推理...",
-                "misinterpretation": 0.55, 
-                "route": "rephrase",
-                "guidance": "引导发火方...",
-                "comfort": "安抚被骂方..."
+                "reasoning": "你的对比分析过程...",
+                "misinterpretation": <替换为你计算出的0.0到1.0之间的真实浮点数>, 
+                "route": "rephrase" 或 "negotiate",
+                "guidance": "引导的话语...",
+                "comfort": "安抚的话语..."
             }}
             """
 
             judge_res = call_agent(agent34_prompt, "请分析动机，打分并提供老师口吻的安抚！", agent_name="裁判&引导 Agent",
-                                   temperature=0.1)
+                                   temperature=0.2) # 温度从 0.1 调高到 0.2，给大模型一点计算空间
 
             if judge_res:
                 try:
