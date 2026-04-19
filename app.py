@@ -23,6 +23,8 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3)
         print(f"\n[{agent_name}] 正在思考中...")
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
+            # 本地调试时，如果没配置环境变量，这里可以暂时写死你的 API Key 以防报错
+            # api_key = "你的API_KEY"
             raise ValueError("缺少环境变量 OPENAI_API_KEY，请在部署平台中配置。")
 
         client = OpenAI(
@@ -64,6 +66,7 @@ def get_session(code):
                 "active": False,
                 "phase": "idle",
                 "triggeredBy": None,
+                "triggerText": None,  # 【新增】：用于记录触发冻结的那句原话
                 "aMotivation": None,
                 "bGuess": None,
                 "result": None
@@ -95,9 +98,6 @@ def join():
     session = get_session(code)
     session["participants"][role] = True
 
-    # ========================================================
-    # 【完美修复】：要求极其生动的背景描写，且戛然而止留给孩子
-    # ========================================================
     if session["scenario"] is None:
         agent1_prompt = """
         你是一个【场控Agent】，负责为7-11岁儿童生成具有丰富背景细节的社交冲突剧本。
@@ -132,7 +132,6 @@ def join():
           "systemRule": "系统判定：你处于{arousal}唤醒状态，由{who}先发言。"
         }
         """
-        # 温度调为 0.75，兼顾逻辑严密与场景丰富度
         scenario_res = call_agent(agent1_prompt, "请按模板生成一个背景生动、字数在100字左右的儿童冲突剧本。",
                                   agent_name="场控 Agent", temperature=0.75)
 
@@ -222,6 +221,7 @@ def send_message():
             session["freeze"]["active"] = True
             session["freeze"]["phase"] = "collecting"
             session["freeze"]["triggeredBy"] = role
+            session["freeze"]["triggerText"] = text  # 【新增保存】：把这句发脾气的话存下来，传给前端！
             session["freeze"]["aMotivation"] = None
             session["freeze"]["bGuess"] = None
             session["freeze"]["result"] = None
