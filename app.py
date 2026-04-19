@@ -1,10 +1,16 @@
 import os
+import urllib.request
+import json
+import time
+import difflib
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
-import time
-import json
-import difflib
-import urllib.request
+
+# 清理代理
+os.environ['http_proxy'] = ''
+os.environ['https_proxy'] = ''
+os.environ['HTTP_PROXY'] = ''
+os.environ['HTTPS_PROXY'] = ''
 
 app = Flask(__name__)
 
@@ -19,7 +25,7 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3)
         print(f"\n[{agent_name}] 正在思考中...")
         api_key = "b8a447348756415ca41e21d50dfd7984.HmPlU26ZFtipn5La"
 
-        # 强制大模型在7秒内必须回答，保住 Vercel 不触发10秒崩溃
+        # 强制7秒超时，保住 Vercel 不崩
         client = OpenAI(
             api_key=api_key,
             base_url="https://open.bigmodel.cn/api/paas/v4/",
@@ -44,27 +50,26 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3)
         else:
             return None
     except Exception as e:
-        print(f"[{agent_name}] 超时或调用失败，自动启用备用方案: {e}")
+        print(f"[{agent_name}] 调用失败: {e}")
         return None
 
 # ========================================================
-# 【绝不丢包版】数据库读写系统（强制JSON头 + 标准指令包）
+# 【终极防失联】数据库读写系统
 # ========================================================
 def get_session(code):
-    url = f"{UPSTASH_URL}/"
-    payload = json.dumps(["GET", code]).encode('utf-8')
-    req = urllib.request.Request(url, data=payload, headers={
-        "Authorization": f"Bearer {UPSTASH_TOKEN}",
-        "Content-Type": "application/json"
-    }, method='POST')
+    # 【核心1】加上时间戳，彻底砸碎 Vercel 的缓存机制！
+    url = f"{UPSTASH_URL}/get/{code}?_t={int(time.time() * 1000)}"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {UPSTASH_TOKEN}"})
     try:
+        # 给足 5 秒读取时间
         with urllib.request.urlopen(req, timeout=5.0) as response:
-            res_data = json.loads(response.read().decode())
-            if res_data.get("result"):
+            res_data = json.loads(response.read().decode('utf-8'))
+            if res_data and res_data.get("result"):
                 return json.loads(res_data["result"])
     except Exception as e:
         print(f"读取数据库失败: {e}")
 
+    # 如果真没拿到，说明是新房间
     return {
         "code": code,
         "participants": {"A": False, "B": False},
@@ -84,14 +89,15 @@ def get_session(code):
 
 def save_session(session):
     code = session["code"]
-    url = f"{UPSTASH_URL}/"
-    val_str = json.dumps(session)
-    payload = json.dumps(["SET", code, val_str]).encode('utf-8')
-    req = urllib.request.Request(url, data=payload, headers={
+    url = f"{UPSTASH_URL}/set/{code}"
+    # 【核心2】压缩数据体积，使用最稳妥的 POST 裸传机制
+    val_str = json.dumps(session, ensure_ascii=False)
+    req = urllib.request.Request(url, data=val_str.encode('utf-8'), headers={
         "Authorization": f"Bearer {UPSTASH_TOKEN}",
-        "Content-Type": "application/json"  # 核心修复点：防止 Vercel 丢包
+        "Content-Type": "application/json"
     }, method='POST')
     try:
+        # 给足 5 秒写入时间
         with urllib.request.urlopen(req, timeout=5.0) as response:
             pass 
     except Exception as e:
@@ -263,6 +269,7 @@ def submit_freeze():
                 "triggeredBy": triggered_by
             }
         else:
+            # 【修复抄作业 Bug】强制它根据语义真实打分
             agent34_prompt = f"""
             你同时扮演【裁判Agent】和【引导Agent】。
             发火方填写的真实动机："{a_motivation_str}"
@@ -288,7 +295,7 @@ def submit_freeze():
             }}
             """
 
-            judge_res = call_agent(agent34_prompt, "请分析动机并打分！", agent_name="裁判&引导 Agent", temperature=0.2)
+            judge_res = call_agent(agent34_prompt, "请分析动机并打分！", agent_name="裁判&引导 Agent", temperature=0.25)
 
             if judge_res:
                 try:
