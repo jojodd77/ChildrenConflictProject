@@ -1,35 +1,31 @@
 import os
+import urllib.request
+import json
+import time
+import difflib
+from flask import Flask, render_template, request, jsonify
+from openai import OpenAI
 
-# 强行清空可能存在的环境变量代理，防止 PyCharm 拦截
+# 清理代理
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 os.environ['HTTP_PROXY'] = ''
 os.environ['HTTPS_PROXY'] = ''
 
-from flask import Flask, render_template, request, jsonify
-from openai import OpenAI
-import time
-import json
-import difflib
-import urllib.request 
-
 app = Flask(__name__)
 
 # ========================================================
-# 【双引擎混动架构】：Upstash 数据库 + 本地内存托底
+# 【外挂大脑】：Upstash Redis 数据库配置
 # ========================================================
-UPSTASH_URL = "https://thankful-basilisk-40393.upstash.io"
+UPSTASH_URL = "https://thankful-basilisk-40393.upstash.io".rstrip('/')
 UPSTASH_TOKEN = "AZ3JAAIncDFkZTI3YTc0N2VlZmM0ZGM2OTY2ZDYxNmRiNDUyNjAxNXAxNDAzOTM"
-
-# 本地内存托底（解决本地测试时连不上海外数据库的问题）
-sessions_db = {}
 
 def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3):
     try:
         print(f"\n[{agent_name}] 正在思考中...")
         api_key = "b8a447348756415ca41e21d50dfd7984.HmPlU26ZFtipn5La"
 
-        # 强制7秒超时，保住 Vercel 不触发10秒崩溃
+        # 强制7秒超时，保住 Vercel 不崩
         client = OpenAI(
             api_key=api_key,
             base_url="https://open.bigmodel.cn/api/paas/v4/",
@@ -54,38 +50,28 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3)
         else:
             return None
     except Exception as e:
-        print(f"[{agent_name}] 超时或调用失败: {e}")
+        print(f"[{agent_name}] 调用失败: {e}")
         return None
 
-
+# ========================================================
+# 【绝不丢包版】数据库读写系统（强制JSON头 + 标准指令包）
+# ========================================================
 def get_session(code):
-    """双引擎读取：先尝试数据库，失败则用内存"""
-    # 1. 尝试云端数据库
     url = f"{UPSTASH_URL}/"
     payload = json.dumps(["GET", code]).encode('utf-8')
     req = urllib.request.Request(url, data=payload, headers={
         "Authorization": f"Bearer {UPSTASH_TOKEN}",
         "Content-Type": "application/json"
     }, method='POST')
-    
     try:
-        with urllib.request.urlopen(req, timeout=1.5) as response:
+        with urllib.request.urlopen(req, timeout=5.0) as response:
             res_data = json.loads(response.read().decode('utf-8'))
             if res_data and res_data.get("result"):
-                session_data = json.loads(res_data["result"])
-                # 同步到本地内存
-                sessions_db[code] = session_data 
-                return session_data
-    except Exception:
-        # 静默处理网络超时（本地测试时肯定连不上）
-        pass
+                return json.loads(res_data["result"])
+    except Exception as e:
+        print(f"读取数据库失败: {e}")
 
-    # 2. 降级到本地内存
-    if code in sessions_db:
-        return sessions_db[code]
-
-    # 3. 创建新房间
-    new_session = {
+    return {
         "code": code,
         "participants": {"A": False, "B": False},
         "scenario": None,
@@ -101,32 +87,21 @@ def get_session(code):
         },
         "agreed": {"A": False, "B": False}
     }
-    sessions_db[code] = new_session
-    return new_session
-
 
 def save_session(session):
-    """双引擎写入：永远存内存 + 尝试存云端"""
     code = session["code"]
-    
-    # 1. 永远保底存入本地内存
-    sessions_db[code] = session
-    
-    # 2. 尝试存入云端数据库
     url = f"{UPSTASH_URL}/"
-    val_str = json.dumps(session)
+    val_str = json.dumps(session, ensure_ascii=False)
     payload = json.dumps(["SET", code, val_str]).encode('utf-8')
     req = urllib.request.Request(url, data=payload, headers={
         "Authorization": f"Bearer {UPSTASH_TOKEN}",
         "Content-Type": "application/json"
     }, method='POST')
-    
     try:
-        urllib.request.urlopen(req, timeout=1.5)
-    except Exception:
-        # 静默处理，靠内存继续运行
-        pass
-
+        with urllib.request.urlopen(req, timeout=5.0) as response:
+            pass 
+    except Exception as e:
+        print(f"写入数据库失败: {e}")
 
 def format_chat_history(chat_list):
     history = []
@@ -135,11 +110,9 @@ def format_chat_history(chat_list):
             history.append(f"{msg['from']}说: {msg['text']}")
     return "\n".join(history[-8:])
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 @app.route('/api/join', methods=['POST'])
 def join():
@@ -178,6 +151,18 @@ def join():
         scenario_res = call_agent(agent1_prompt, "请生成儿童冲突剧本。", agent_name="场控 Agent", temperature=0.7)
 
         if scenario_res:
+            # ========================================================
+            # 【终极防翻车】：强行清洗大模型格式，把字典对象拆成纯文本
+            # ========================================================
+            for key in ["storyA", "storyB", "title", "systemRule", "objective_fact"]:
+                if isinstance(scenario_res.get(key), dict):
+                    vals = list(scenario_res[key].values())
+                    scenario_res[key] = str(vals[0]) if vals else ""
+                elif isinstance(scenario_res.get(key), list):
+                    scenario_res[key] = str(scenario_res[key][0]) if scenario_res[key] else ""
+                else:
+                    scenario_res[key] = str(scenario_res.get(key, ""))
+            
             session["scenario"] = scenario_res
         else:
             session["scenario"] = {
@@ -185,7 +170,7 @@ def join():
                 "objective_fact": "B看到一阵风快把A的标本吹跑了，想帮忙按住，却不小心压碎了。",
                 "storyA": "今天下午的自然课上，老师让我们在操场收集树叶做标本。我刚拼出一只漂亮的树叶蝴蝶放在椅子上晾干。回头就看到B一巴掌拍在我的树叶蝴蝶上，标本瞬间全碎了！我快气哭了，B绝对是故意的，就是嫉妒我！",
                 "storyB": "今天下午的自然课上，我抬头发现突然刮起一阵风，A放在长椅上的树叶蝴蝶马上要被吹跑了。我急忙冲过去想用手帮A按住。结果跑得太急没控制好力气，一巴掌把树叶压碎了。我真的是想帮忙的，但A现在红着眼睛瞪着我，我好委屈。",
-                "systemRule": "系统判定：你处于{arousal}唤醒状态，由{who}先发言。"
+                "systemRule": "系统判定：你处于高唤醒状态，由A先发言。"
             }
 
     if not any(m.get("meta") == "welcome" for m in session["chat"]):
@@ -199,12 +184,10 @@ def join():
     save_session(session)
     return jsonify(session)
 
-
 @app.route('/api/sync', methods=['POST'])
 def sync():
     code = request.json.get('code')
     return jsonify(get_session(code) if code else {})
-
 
 @app.route('/api/send_message', methods=['POST'])
 def send_message():
@@ -266,7 +249,6 @@ def send_message():
     save_session(session)
     return jsonify(session)
 
-
 @app.route('/api/submit_freeze', methods=['POST'])
 def submit_freeze():
     data = request.json
@@ -317,14 +299,14 @@ def submit_freeze():
             【话术规范】：必须像老师一样温柔对他们说话。绝不准盲目照抄示例分数，必须填入你真实计算的浮点数！
             {{
                 "reasoning": "分析...",
-                "misinterpretation": 0.0, 
+                "misinterpretation": <替换为你计算出的0.0到1.0之间的真实浮点数>, 
                 "route": "rephrase" 或 "negotiate",
                 "guidance": "引导...",
                 "comfort": "安抚..."
             }}
             """
 
-            judge_res = call_agent(agent34_prompt, "请分析动机并打分！千万不要照抄0.0，必须填写0到1之间的真实浮点数！", agent_name="裁判&引导 Agent", temperature=0.25)
+            judge_res = call_agent(agent34_prompt, "请分析动机并打分！", agent_name="裁判&引导 Agent", temperature=0.25)
 
             if judge_res:
                 try:
@@ -380,7 +362,6 @@ def submit_freeze():
     save_session(session)
     return jsonify(session)
 
-
 @app.route('/api/agree', methods=['POST'])
 def agree():
     data = request.json
@@ -401,7 +382,6 @@ def agree():
 
     save_session(session)
     return jsonify(session)
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
