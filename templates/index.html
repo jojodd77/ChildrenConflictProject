@@ -7,97 +7,96 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=58" />
-
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=68" />
+    
     <style>
-      /* ==========================================
-         【1. 首页排版修复】：图片回归，按钮不换行
-         ========================================== */
-      #screenHome.screen--active { display: flex; flex-direction: column; justify-content: center; }
-      .btn { white-space: nowrap !important; }
-      .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; }
-      .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
-      .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; box-shadow: 8px 8px 0px #FDE047; }
+      /* 全局色彩与边框洗牌 */
+      :root {
+          --primary: #3B82F6 !important; --primary-hover: #2563EB !important;
+          --secondary: #F8FAFC !important; --bg: #F0F4F8 !important;
+          --border: #E2E8F0 !important; --text: #334155 !important;
+      }
+      body { background-color: #F0F4F8 !important; }
+      .app { border: 1px solid rgba(255,255,255,0.5) !important; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08) !important; border-radius: 24px; margin-top: 2vh; height: 96vh; background: #FFFFFF !important; }
+      .card, .bubble, .input, .textarea, .btn, .chip, .presence, .systemNotice { border-width: 1px !important; border-color: #E2E8F0 !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important; }
+      .card { border-radius: 20px !important; }
+      .bubble { border-radius: 16px !important; background: #F8FAFC !important; text-align: left; }
+      .bubble--a { background: #FEF2F2 !important; border-color: #FEE2E2 !important; }
+      .bubble--b { background: #EFF6FF !important; border-color: #DBEAFE !important; }
+      .topbar { border-bottom: 1px solid #E2E8F0 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important; }
+      .brand__mark { background: #DBEAFE !important; color: #1E3A8A !important; border: none !important; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2) !important; }
 
-      /* ==========================================
-         【2. 全屏加载与和好动画】
-         ========================================== */
+      #screenHome.screen--active { display: flex; flex-direction: column; justify-content: center; }
+      .btn { white-space: nowrap !important; transition: all 0.2s ease !important; }
+      .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05) !important; }
+      .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; border: none !important; box-shadow: none !important; background: transparent !important;}
+      .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
+      .hero__image { width: 100%; max-width: 360px; height: auto; border: 1px solid #E2E8F0; border-radius: 24px; box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15) !important; }
+      
       .modal.loadingOverlay { position: fixed; inset: 0; z-index: 10001; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
       .modal.loadingOverlay[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
       .magic-spinner { font-size: 80px; animation: magicWand 2.5s infinite linear; margin-bottom: 24px; }
-      .loading-text { font-size: 18px; font-weight: 700; color: #D97706; text-align: center; }
+      .loading-text { font-size: 18px; font-weight: 700; color: #2563EB; text-align: center; }
       @keyframes magicWand { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
-
+      
       #celebrationOverlay { position: fixed; inset: 0; z-index: 9999; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
       #celebrationOverlay.show { opacity: 1; pointer-events: auto; }
       @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
       @keyframes floatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
       .celeb-icon { font-size: 100px; animation: popIn 0.6s ease forwards, floatBounce 2s ease-in-out infinite 0.6s; }
-      .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
-
-      /* ==========================================
-         【3. 语音控制与卡片UI】
-         ========================================== */
+      .celeb-text { color: #2563EB; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
+      
       .btn--mic, .btn--speak { padding: 8px; border-radius: 50%; background: var(--secondary); border: none; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-      .btn--mic { color: var(--primary); }
+      .btn--mic { color: var(--primary); border: 1px solid #E2E8F0; }
       .btn--mic:hover, .btn--speak:hover { background: #DBEAFE; transform: scale(1.1); }
-      .btn--mic.recording { background: var(--danger); color: white; animation: pulse 1s infinite; }
+      .btn--mic.recording { background: var(--danger) !important; color: white !important; border-color: transparent !important; animation: pulse 1s infinite; }
       @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-
-      .btn-sound { background: rgba(255,255,255,0.5); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-      .btn-sound:hover { background: rgba(255,255,255,0.9); transform: scale(1.1); }
-      .btn-sound.playing { background: #FDE047; animation: soundPulse 1.5s infinite; }
-      @keyframes soundPulse { 0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.6); } 70% { box-shadow: 0 0 0 8px rgba(253, 224, 71, 0); } 100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); } }
-
+      
+      .btn-sound { background: rgba(255,255,255,0.8); border: 1px solid #E2E8F0; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+      .btn-sound:hover { background: #FFFFFF; transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+      .btn-sound.playing { background: #DBEAFE; border-color: #93C5FD; animation: soundPulse 1.5s infinite; }
+      @keyframes soundPulse { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); } 70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+      
       .composer__row { display: flex; gap: 8px; align-items: center; width: 100%; }
       .composer__row .btn--mic { flex-shrink: 0; width: 44px; height: 44px; padding: 0; }
       .composer__row .input { flex: 1; }
-      .composer__row .btn--primary { flex-shrink: 0; }
-
-      .heart-match-container { border-width: 3px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+      .composer__row .btn--primary { flex-shrink: 0; background: #3B82F6 !important; border: none !important; color: white !important; }
+      
+      .heart-match-container { border-width: 1px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: all 0.3s ease; }
       .heart-track { height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
-      .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); text-shadow: 0 4px 6px rgba(0,0,0,0.15); z-index: 5; }
+      .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); text-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 5; }
       .heart-left { left: 0%; }
       .heart-right { right: 0%; }
       .match-text { font-size: 24px; font-weight: 900; margin-top: 10px; }
       .match-subtext { font-size: 16px; font-weight: 700; margin-top: 5px; margin-bottom: 15px; }
-
-      .typing-indicator { display: none; padding: 12px 16px; background: #FEF3C7; border-radius: 12px; font-size: 14px; color: #B45309; align-items: center; gap: 8px; width: fit-content; margin: 10px 0; border: 2px solid #1E293B; }
+      
+      .typing-indicator { display: none; padding: 12px 16px; background: #F0F9FF; border-radius: 16px; font-size: 14px; color: #2563EB; align-items: center; gap: 8px; width: fit-content; margin: 10px 0; border: 1px solid #BAE6FD; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.05); }
       .typing-indicator.active { display: flex; }
-      .dots span { display: inline-block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+      .dots span { display: inline-block; width: 6px; height: 6px; background: #3B82F6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
-      /* ==========================================
-         【4. 完美复刻精美蓝色弹窗 UI (已修改为蓝色系)】
-         ========================================== */
-      .report-card-super { background: #BFDBFE; border: 4px solid #2B3245; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 8px 0 #2B3245; }
+      .report-card-super { background: linear-gradient(135deg, #FFFFFF, #EFF6FF); border: 1px solid #BFDBFE; border-radius: 24px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 50px rgba(59, 130, 246, 0.15); }
       .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
-      .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 600; }
-      .super-badges { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
-      .super-badge-item { background: white; padding: 8px 20px; border-radius: 30px; font-weight: 900; color: #2563EB; border: 2px solid #93C5FD; box-shadow: 0 4px 0 #93C5FD; }
-      .super-tip-box { background: #EFF6FF; padding: 15px; border-radius: 12px; margin: 20px 0; font-size: 14px; text-align: left; color: #1E3A8A; border: 2px dashed #60A5FA; line-height: 1.6; }
+      .report-card-super p { font-size: 16px; color: #475569; margin-bottom: 24px; font-weight: 600; }
+      .super-badges { display: flex; justify-content: center; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+      .super-badge-item { background: white; padding: 8px 16px; border-radius: 30px; font-weight: 700; font-size: 14px; color: #2563EB; border: 1px solid #BFDBFE; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.1); }
+      .super-tip-box { background: rgba(255, 255, 255, 0.8); padding: 16px; border-radius: 16px; margin: 24px 0; font-size: 14px; text-align: left; color: #334155; border: 1px dashed #93C5FD; line-height: 1.6; }
       .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
-      .super-btn { border-radius: 30px; padding: 12px 24px; font-weight: 900; font-size: 16px; border: 3px solid #2B3245; box-shadow: 0 4px 0 #2B3245; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
-      .super-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #2B3245; }
-      .super-btn-ghost { background: white; color: #2563EB; }
-      .super-btn-primary { background: #2563EB; color: white; }
+      .super-btn { border-radius: 30px; padding: 12px 28px; font-weight: 700; font-size: 16px; border: none; cursor: pointer; transition: all 0.2s ease; }
+      .super-btn-ghost { background: white; color: #3B82F6; border: 1px solid #BFDBFE; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+      .super-btn-ghost:hover { background: #F8FAFC; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.08); }
+      .super-btn-primary { background: #3B82F6; color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+      .super-btn-primary:hover { background: #2563EB; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
 
-      /* ==========================================
-         【5. 终极修复：聊天气泡完美左右对齐】
-         ========================================== */
-      /* 强制覆盖外部样式表可能存在的错位配置 */
       .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: flex-start !important; }
       .msg--right { flex-direction: row-reverse !important; }
-      .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; font-weight: 900 !important; border: 2px solid #064E3B !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0; }
-      .avatar--a, .avatar--b { flex-shrink: 0; }
-
-      /* 新增的包裹容器，负责挤压气泡贴靠头像 */
+      .avatar--j { background: #D1FAE5 !important; color: #047857 !important; border: 1px solid #A7F3D0 !important; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.15) !important; flex-shrink: 0; }
+      .avatar--a { background: #FEE2E2 !important; color: #B91C1C !important; border: 1px solid #FECACA !important; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.15) !important; flex-shrink: 0; }
+      .avatar--b { background: #DBEAFE !important; color: #1D4ED8 !important; border: 1px solid #BFDBFE !important; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15) !important; flex-shrink: 0; }
       .msg-content-wrap { display: flex; flex-direction: column; max-width: 85%; }
       .msg:not(.msg--right) .msg-content-wrap { align-items: flex-start; }
       .msg--right .msg-content-wrap { align-items: flex-end; }
-
-      .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; }
     </style>
   </head>
   <body>
@@ -163,7 +162,7 @@
               <div class="card card--tight contextCard">
                 <div class="card__title" style="display:flex; justify-content:space-between; align-items:center;">
                    <span>📖 本次情境</span>
-                   <button class="btn btn--speak" style="font-size: 12px; padding: 4px 8px; border-radius: 8px;" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停">🔊 读给我听</button>
+                   <button class="btn btn--speak" style="font-size: 12px; padding: 4px 8px; border-radius: 8px; background: white; border: 1px solid #E2E8F0;" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停">🔊 读给我听</button>
                 </div>
                 <div class="story" id="storyText"></div>
                 <div class="divider"></div>
@@ -188,7 +187,7 @@
 
                 <div style="padding: 0 16px;">
                     <div class="typing-indicator" id="typingIndicator">
-                       <div class="avatar avatar--j" style="width:24px; height:24px; border: 2px solid #1E293B; background: #A7F3D0; display:flex; align-items:center; justify-content:center;">
+                       <div class="avatar avatar--j" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center;">
                            <span style="color:#064E3B; font-weight:900; font-size:12px;">法</span>
                        </div>
                        法官精灵正在努力思考中... <div class="dots"><span></span><span></span><span></span></div>
@@ -200,8 +199,8 @@
                     <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: var(--good); border-color: var(--good); color: white; width: 100%;">🤝 我们商量好了 (点击拉钩)</button>
                   </div>
                   <div class="composer__row">
-                    <button class="btn btn--mic" id="btnMicChat" title="长按说话">🎤</button>
-                    <input class="input input--big" id="composerInput" placeholder="打字或长按左侧麦克风说话…" autocomplete="off" />
+                    <button class="btn btn--mic" id="btnMicChat" title="点击说话">🎤</button>
+                    <input class="input input--big" id="composerInput" placeholder="打字或点击左侧麦克风说话…" autocomplete="off" />
                     <button class="btn btn--primary" id="btnSend" type="button">发送</button>
                   </div>
                   <div class="composer__sub" id="composerSub"></div>
@@ -224,9 +223,9 @@
         <div class="modal__body">
           <div class="modal__desc" id="modalDesc" style="margin-bottom: 12px;"></div>
           <label class="field">
-            <span class="field__label" id="modalFieldLabel">请打字或长按麦克风语音输入：</span>
+            <span class="field__label" id="modalFieldLabel">请打字或点击麦克风语音输入：</span>
             <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 8px;">
-              <button class="btn btn--mic" id="btnMicModal" title="长按说话" style="margin-top: 5px;">🎤</button>
+              <button class="btn btn--mic" id="btnMicModal" title="点击说话" style="margin-top: 5px;">🎤</button>
               <textarea class="textarea" id="modalText" rows="4" placeholder="在这里输入..."></textarea>
             </div>
           </label>
@@ -244,18 +243,18 @@
         <div class="report-card-super">
           <h2>🏆 调解大成功！</h2>
           <p>你们通过沟通解开了误会，真是太棒了！</p>
-
+          
           <div class="super-badges">
             <div class="super-badge-item">👂 倾听小达人</div>
             <div class="super-badge-item">🗣️ 表达小天才</div>
             <div class="super-badge-item">🤝 和平使者</div>
           </div>
-
+          
           <div class="super-tip-box">
             <strong>💡 法官精灵的悄悄话：</strong><br>
             遇到矛盾时，深呼吸，勇敢说出“我需要什么”，而不是直接发脾气。你们今天做得非常好，继续保持哦！
           </div>
-
+          
           <div class="super-btn-group">
               <button class="super-btn super-btn-ghost" id="btnReviewChat">复盘聊天</button>
               <button class="super-btn super-btn-primary" id="btnReturnHome">再玩一次</button>
@@ -286,7 +285,7 @@
         const composerInput = $("composerInput");
         const btnSend = $("btnSend");
         const composerSub = $("composerSub");
-
+        
         const negotiateActions = $("negotiateActions");
         const btnAgree = $("btnAgree");
         const finishModal = $("finishModal");
@@ -307,7 +306,9 @@
         let syncInterval = null;
         let currentSessionData = null;
 
-        // 语音引擎
+        // ==========================================
+        // 【语音引擎】：锁定极品音色
+        // ==========================================
         let preferredVoice = null;
         function loadVoices() {
             const voices = speechSynthesis.getVoices();
@@ -333,57 +334,62 @@
         };
 
         // ==========================================
-        // 【升级版 语音识别系统】：开启实时上屏，防断触，显性报错
+        // 【完全重写防崩溃 语音识别】：点击开关，自动停止
         // ==========================================
         const setupSpeechRecognition = (btnId, inputId) => {
             const btn = $(btnId); const input = $(inputId);
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { btn.style.display = 'none'; return; }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; 
+            const recognition = new SpeechRecognition(); 
+            recognition.lang = 'zh-CN'; 
+            recognition.continuous = false; // 设为 false，说完话自动停，最安全
+            recognition.interimResults = false; 
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'zh-CN';
-            recognition.continuous = false;
-            recognition.interimResults = true; // 实时反馈
+            let isRecording = false;
 
-            let originalValue = "";
-
-            recognition.onstart = () => {
-                btn.classList.add("recording");
-                input.placeholder = "正在听你说话...";
-                originalValue = input.value; // 保存说话前框里的文字
+            const resetMicUI = () => {
+                isRecording = false;
+                btn.classList.remove("recording");
+                input.placeholder = "打字或点击麦克风说话...";
             };
 
-            recognition.onresult = (event) => {
-                let interim = "";
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    interim += event.results[i][0].transcript;
-                }
-                input.value = originalValue + interim; 
+            recognition.onstart = () => { 
+                isRecording = true;
+                btn.classList.add("recording"); 
+                input.placeholder = "正在听你说... (说完自动停止)"; 
+            };
+
+            recognition.onresult = (event) => { 
+                const transcript = event.results[0][0].transcript;
+                input.value += transcript; 
             };
 
             recognition.onerror = (event) => {
                 console.error("语音识别错误:", event.error);
-                if(event.error === 'not-allowed') {
+                if(event.error === 'not-allowed' || event.error === 'service-not-allowed') {
                     input.placeholder = "⚠️ 麦克风受限，请看弹窗提示";
-                    alert("【麦克风权限被拦截！】\n\n1. 请检查浏览器地址栏左侧，是否允许了麦克风。\n2. 浏览器的安全机制要求：如果是局域网访问，必须通过 http://127.0.0.1:5000 或 https 安全链接，否则麦克风无法开启！");
+                    alert("【麦克风无法启动！】\n\n原因可能是：\n1. 浏览器未授予麦克风权限。\n2. 您未在安全的 HTTPS 或 127.0.0.1 环境下访问。");
                 } else {
-                    input.placeholder = "没听清，请再按住说一次...";
+                    input.placeholder = "没听清，请再试一次...";
+                }
+                resetMicUI();
+            };
+
+            recognition.onend = resetMicUI;
+
+            // 取消所有长按事件，统一改为最安全的 click 点击事件
+            btn.onclick = (e) => {
+                e.preventDefault();
+                if (isRecording) {
+                    try { recognition.stop(); } catch(err){}
+                } else {
+                    try { recognition.start(); } catch(err){}
                 }
             };
-
-            recognition.onend = () => {
-                btn.classList.remove("recording");
-                input.placeholder = "打字或长按左侧麦克风说话...";
-            };
-
-            const startRecord = (e) => { e.preventDefault(); try { recognition.start(); } catch(err){} };
-            const stopRecord = (e) => { e.preventDefault(); try { recognition.stop(); } catch(err){} };
-
-            btn.onmousedown = startRecord; btn.ontouchstart = startRecord;
-            btn.onmouseup = stopRecord; btn.ontouchend = stopRecord; btn.onmouseleave = stopRecord;
         };
 
-        setupSpeechRecognition('btnMicChat', 'composerInput');
+        setupSpeechRecognition('btnMicChat', 'composerInput'); 
         setupSpeechRecognition('btnMicModal', 'modalText');
 
         function randomCode() { const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let out = ""; for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)]; return out; }
@@ -396,9 +402,9 @@
             if (!result) return "";
             const score = Math.max(0, Math.min(100, Math.round(result.misinterpretation * 100))); const matchPercent = 100 - score; const offset = (score / 2);
             let theme = {}; let title = "";
-            if (matchPercent > 70) { title = "太棒了，你们的心贴得很近！"; theme = { bg: '#F0FDF4', border: '#6EE7B7', text: '#047857', lightText: '#065F46' }; }
-            else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#FFFBEB', border: '#FCD34D', text: '#B45309', lightText: '#D97706' }; }
-            else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', border: '#FCA5A5', text: '#B91C1C', lightText: '#DC2626' }; }
+            if (matchPercent > 70) { title = "太棒了，你们的心贴得很近！"; theme = { bg: '#F0F9FF', border: '#BAE6FD', text: '#0369A1', lightText: '#0284C7' }; }
+            else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#F8FAFC', border: '#CBD5E1', text: '#475569', lightText: '#64748B' }; }
+            else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', border: '#FECACA', text: '#B91C1C', lightText: '#DC2626' }; }
 
             const guidance = result.guidance ? `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.guidance)}', this)">🔊</button><div style="flex:1; padding-top:4px;"><strong>给你的悄悄话：</strong>${result.guidance}</div></div>` : '';
             const comfort = result.comfort ? `<div style="display:flex; align-items:flex-start; gap:8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.comfort)}', this)">🔊</button><div style="flex:1; padding-top:4px;"><strong>给对方的安抚：</strong>${result.comfort}</div></div>` : '';
@@ -481,7 +487,7 @@
               if (modal.getAttribute("aria-hidden") !== "false") {
                   const triggeredByMe = session.freeze.triggeredBy === appState.role;
                   
-                  // 【新增核心功能】：提取原话，红框高亮展示
+                  // 【新增核心】：原话红框展示
                   const triggerTxt = session.freeze.triggerText || "刚才说的话";
                   const blockquoteHtml = `<div style="background: #FEE2E2; border-left: 4px solid #EF4444; padding: 12px; margin: 12px 0; border-radius: 8px; color: #991B1B; font-weight: 700; font-size: 15px; text-align: left;">"${escapeHtml(triggerTxt)}"</div>`;
 
@@ -494,7 +500,7 @@
                   else if (!triggeredByMe && !session.freeze.bGuess) { 
                       setTimeout(() => { 
                           modalTitle.textContent = "你觉得对方为什么生气？"; 
-                          modalDesc.innerHTML = `对方刚才说：${blockquoteHtml}猜猜看，对方遇到了什么困难？按住麦克风说出来吧！`; 
+                          modalDesc.innerHTML = `对方刚才说：${blockquoteHtml}猜猜看，对方遇到了什么困难？点击麦克风说出来吧！`; 
                           modal.dataset.mode = "bGuess"; 
                           modal.setAttribute("aria-hidden", "false"); 
                       }, 1000); 
