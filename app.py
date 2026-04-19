@@ -1,31 +1,35 @@
 import os
-import urllib.request
-import json
-import time
-import difflib
-from flask import Flask, render_template, request, jsonify
-from openai import OpenAI
 
-# 清理代理
+# 强行清空可能存在的环境变量代理，防止 PyCharm 拦截
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 os.environ['HTTP_PROXY'] = ''
 os.environ['HTTPS_PROXY'] = ''
 
+from flask import Flask, render_template, request, jsonify
+from openai import OpenAI
+import time
+import json
+import difflib
+import urllib.request 
+
 app = Flask(__name__)
 
 # ========================================================
-# 【外挂大脑】：Upstash Redis 数据库配置
+# 【双引擎混动架构】：Upstash 数据库 + 本地内存托底
 # ========================================================
-UPSTASH_URL = "https://thankful-basilisk-40393.upstash.io".rstrip('/')
+UPSTASH_URL = "https://thankful-basilisk-40393.upstash.io"
 UPSTASH_TOKEN = "AZ3JAAIncDFkZTI3YTc0N2VlZmM0ZGM2OTY2ZDYxNmRiNDUyNjAxNXAxNDAzOTM"
+
+# 本地内存托底（解决本地测试时连不上海外数据库的问题）
+sessions_db = {}
 
 def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3):
     try:
         print(f"\n[{agent_name}] 正在思考中...")
         api_key = "b8a447348756415ca41e21d50dfd7984.HmPlU26ZFtipn5La"
 
-        # 强制7秒超时，保住 Vercel 不崩
+        # 强制7秒超时，保住 Vercel 不触发10秒崩溃
         client = OpenAI(
             api_key=api_key,
             base_url="https://open.bigmodel.cn/api/paas/v4/",
@@ -50,27 +54,38 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3)
         else:
             return None
     except Exception as e:
-        print(f"[{agent_name}] 调用失败: {e}")
+        print(f"[{agent_name}] 超时或调用失败: {e}")
         return None
 
-# ========================================================
-# 【终极防失联】数据库读写系统
-# ========================================================
+
 def get_session(code):
-    # 【核心1】加上时间戳，彻底砸碎 Vercel 的缓存机制！
-    url = f"{UPSTASH_URL}/get/{code}?_t={int(time.time() * 1000)}"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {UPSTASH_TOKEN}"})
+    """双引擎读取：先尝试数据库，失败则用内存"""
+    # 1. 尝试云端数据库
+    url = f"{UPSTASH_URL}/"
+    payload = json.dumps(["GET", code]).encode('utf-8')
+    req = urllib.request.Request(url, data=payload, headers={
+        "Authorization": f"Bearer {UPSTASH_TOKEN}",
+        "Content-Type": "application/json"
+    }, method='POST')
+    
     try:
-        # 给足 5 秒读取时间
-        with urllib.request.urlopen(req, timeout=5.0) as response:
+        with urllib.request.urlopen(req, timeout=1.5) as response:
             res_data = json.loads(response.read().decode('utf-8'))
             if res_data and res_data.get("result"):
-                return json.loads(res_data["result"])
-    except Exception as e:
-        print(f"读取数据库失败: {e}")
+                session_data = json.loads(res_data["result"])
+                # 同步到本地内存
+                sessions_db[code] = session_data 
+                return session_data
+    except Exception:
+        # 静默处理网络超时（本地测试时肯定连不上）
+        pass
 
-    # 如果真没拿到，说明是新房间
-    return {
+    # 2. 降级到本地内存
+    if code in sessions_db:
+        return sessions_db[code]
+
+    # 3. 创建新房间
+    new_session = {
         "code": code,
         "participants": {"A": False, "B": False},
         "scenario": None,
@@ -86,22 +101,32 @@ def get_session(code):
         },
         "agreed": {"A": False, "B": False}
     }
+    sessions_db[code] = new_session
+    return new_session
+
 
 def save_session(session):
+    """双引擎写入：永远存内存 + 尝试存云端"""
     code = session["code"]
-    url = f"{UPSTASH_URL}/set/{code}"
-    # 【核心2】压缩数据体积，使用最稳妥的 POST 裸传机制
-    val_str = json.dumps(session, ensure_ascii=False)
-    req = urllib.request.Request(url, data=val_str.encode('utf-8'), headers={
+    
+    # 1. 永远保底存入本地内存
+    sessions_db[code] = session
+    
+    # 2. 尝试存入云端数据库
+    url = f"{UPSTASH_URL}/"
+    val_str = json.dumps(session)
+    payload = json.dumps(["SET", code, val_str]).encode('utf-8')
+    req = urllib.request.Request(url, data=payload, headers={
         "Authorization": f"Bearer {UPSTASH_TOKEN}",
         "Content-Type": "application/json"
     }, method='POST')
+    
     try:
-        # 给足 5 秒写入时间
-        with urllib.request.urlopen(req, timeout=5.0) as response:
-            pass 
-    except Exception as e:
-        print(f"写入数据库失败: {e}")
+        urllib.request.urlopen(req, timeout=1.5)
+    except Exception:
+        # 静默处理，靠内存继续运行
+        pass
+
 
 def format_chat_history(chat_list):
     history = []
@@ -110,9 +135,11 @@ def format_chat_history(chat_list):
             history.append(f"{msg['from']}说: {msg['text']}")
     return "\n".join(history[-8:])
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/api/join', methods=['POST'])
 def join():
@@ -172,10 +199,12 @@ def join():
     save_session(session)
     return jsonify(session)
 
+
 @app.route('/api/sync', methods=['POST'])
 def sync():
     code = request.json.get('code')
     return jsonify(get_session(code) if code else {})
+
 
 @app.route('/api/send_message', methods=['POST'])
 def send_message():
@@ -237,6 +266,7 @@ def send_message():
     save_session(session)
     return jsonify(session)
 
+
 @app.route('/api/submit_freeze', methods=['POST'])
 def submit_freeze():
     data = request.json
@@ -269,7 +299,6 @@ def submit_freeze():
                 "triggeredBy": triggered_by
             }
         else:
-            # 【修复抄作业 Bug】强制它根据语义真实打分
             agent34_prompt = f"""
             你同时扮演【裁判Agent】和【引导Agent】。
             发火方填写的真实动机："{a_motivation_str}"
@@ -288,14 +317,14 @@ def submit_freeze():
             【话术规范】：必须像老师一样温柔对他们说话。绝不准盲目照抄示例分数，必须填入你真实计算的浮点数！
             {{
                 "reasoning": "分析...",
-                "misinterpretation": <替换为你计算出的0.0到1.0之间的真实浮点数>, 
+                "misinterpretation": 0.0, 
                 "route": "rephrase" 或 "negotiate",
                 "guidance": "引导...",
                 "comfort": "安抚..."
             }}
             """
 
-            judge_res = call_agent(agent34_prompt, "请分析动机并打分！", agent_name="裁判&引导 Agent", temperature=0.25)
+            judge_res = call_agent(agent34_prompt, "请分析动机并打分！千万不要照抄0.0，必须填写0到1之间的真实浮点数！", agent_name="裁判&引导 Agent", temperature=0.25)
 
             if judge_res:
                 try:
@@ -351,6 +380,7 @@ def submit_freeze():
     save_session(session)
     return jsonify(session)
 
+
 @app.route('/api/agree', methods=['POST'])
 def agree():
     data = request.json
@@ -371,6 +401,7 @@ def agree():
 
     save_session(session)
     return jsonify(session)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
