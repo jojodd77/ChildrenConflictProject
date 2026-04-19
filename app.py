@@ -10,21 +10,22 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import time
 import json
-import re
 import difflib
+import urllib.request # 使用 Python 内置网络库，防止 Vercel 报错缺少依赖
 
 app = Flask(__name__)
 
-sessions_db = {}
-
+# ========================================================
+# 【外挂大脑接入】：配置 Upstash Redis 数据库
+# ========================================================
+UPSTASH_URL = "https://thankful-basilisk-40393.upstash.io"
+UPSTASH_TOKEN = "AZ3JAAIncDFkZTI3YTc0N2VlZmM0ZGM2OTY2ZDYxNmRiNDUyNjAxNXAxNDAzOTM"
 
 def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3):
     try:
         print(f"\n[{agent_name}] 正在思考中...")
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            # 本地调试时，如果没配置环境变量，这里可以暂时写死你的 API Key 以防报错
-            # api_key = "你的API_KEY"
             raise ValueError("缺少环境变量 OPENAI_API_KEY，请在部署平台中配置。")
 
         client = OpenAI(
@@ -54,26 +55,53 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3)
         print(f"[{agent_name}] 调用或解析失败: {e}")
         return None
 
-
+# ========================================================
+# 【核心改造】：从 Upstash 数据库读取/保存数据
+# ========================================================
 def get_session(code):
-    if code not in sessions_db:
-        sessions_db[code] = {
-            "code": code,
-            "participants": {"A": False, "B": False},
-            "scenario": None,
-            "chat": [],
-            "freeze": {
-                "active": False,
-                "phase": "idle",
-                "triggeredBy": None,
-                "triggerText": None,  # 【新增】：用于记录触发冻结的那句原话
-                "aMotivation": None,
-                "bGuess": None,
-                "result": None
-            },
-            "agreed": {"A": False, "B": False}
-        }
-    return sessions_db[code]
+    """从数据库读取房间数据，如果没有则创建一个新的"""
+    url = f"{UPSTASH_URL}/get/{code}"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {UPSTASH_TOKEN}"})
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_data = json.loads(response.read().decode())
+            result_str = res_data.get("result")
+            if result_str:
+                return json.loads(result_str)
+    except Exception as e:
+        print(f"从数据库读取失败: {e}")
+
+    # 如果数据库里没有这个房间，返回默认的新房间
+    return {
+        "code": code,
+        "participants": {"A": False, "B": False},
+        "scenario": None,
+        "chat": [],
+        "freeze": {
+            "active": False,
+            "phase": "idle",
+            "triggeredBy": None,
+            "triggerText": None,
+            "aMotivation": None,
+            "bGuess": None,
+            "result": None
+        },
+        "agreed": {"A": False, "B": False}
+    }
+
+def save_session(session):
+    """把房间的最新数据立刻存回数据库"""
+    code = session["code"]
+    url = f"{UPSTASH_URL}/set/{code}"
+    data = json.dumps(session).encode('utf-8')
+    req = urllib.request.Request(url, data=data, headers={"Authorization": f"Bearer {UPSTASH_TOKEN}"}, method='POST')
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            pass # 成功写入
+    except Exception as e:
+        print(f"写入数据库失败: {e}")
 
 
 def format_chat_history(chat_list):
@@ -95,7 +123,7 @@ def join():
     code = data.get('code')
     role = data.get('role')
 
-    session = get_session(code)
+    session = get_session(code) # 读取最新数据
     session["participants"][role] = True
 
     if session["scenario"] is None:
@@ -154,6 +182,7 @@ def join():
             "meta": "welcome"
         })
 
+    save_session(session) # 【关键】：存入数据库！
     return jsonify(session)
 
 
@@ -221,7 +250,7 @@ def send_message():
             session["freeze"]["active"] = True
             session["freeze"]["phase"] = "collecting"
             session["freeze"]["triggeredBy"] = role
-            session["freeze"]["triggerText"] = text  # 【新增保存】：把这句发脾气的话存下来，传给前端！
+            session["freeze"]["triggerText"] = text 
             session["freeze"]["aMotivation"] = None
             session["freeze"]["bGuess"] = None
             session["freeze"]["result"] = None
@@ -241,6 +270,7 @@ def send_message():
             "text": text
         })
 
+    save_session(session) # 【关键】：发消息后存入数据库
     return jsonify(session)
 
 
@@ -385,6 +415,7 @@ def submit_freeze():
                 "meta": "waiting"
             })
 
+    save_session(session) # 【关键】：提交后存入数据库
     return jsonify(session)
 
 
@@ -434,6 +465,7 @@ def agree():
             "meta": "waiting"
         })
 
+    save_session(session) # 【关键】：同意后存入数据库
     return jsonify(session)
 
 
