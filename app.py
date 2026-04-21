@@ -20,7 +20,7 @@ app = Flask(__name__)
 UPSTASH_URL = "https://thankful-basilisk-40393.upstash.io".rstrip('/')
 UPSTASH_TOKEN = "AZ3JAAIncDFkZTI3YTc0N2VlZmM0ZGM2OTY2ZDYxNmRiNDUyNjAxNXAxNDAzOTM"
 
-# 本地内存保底（解决数据库超时导致的卡死问题）
+# 本地内存保底
 sessions_db = {}
 
 def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3, timeout=7.0):
@@ -57,24 +57,30 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3,
 
 def get_session(code):
     """双引擎读取：先尝试云端数据库，失败则用本地内存"""
-    # 1. 尝试云端
-    url = f"{UPSTASH_URL}/get/{code}?_t={int(time.time() * 1000)}"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {UPSTASH_TOKEN}"})
+    url = f"{UPSTASH_URL}/"
+    # 使用最标准的 POST 指令包，防止丢包
+    payload = json.dumps(["GET", code]).encode('utf-8')
+    req = urllib.request.Request(url, data=payload, headers={
+        "Authorization": f"Bearer {UPSTASH_TOKEN}",
+        "Content-Type": "application/json"
+    }, method='POST')
+    
     try:
-        with urllib.request.urlopen(req, timeout=1.5) as response:
+        # 【核心修复】：超时放宽到 5.0 秒，绝对不让网络抖动导致读到假数据！
+        with urllib.request.urlopen(req, timeout=5.0) as response:
             res_data = json.loads(response.read().decode('utf-8'))
             if res_data and res_data.get("result"):
                 session_data = json.loads(res_data["result"])
                 sessions_db[code] = session_data # 同步给本地
                 return session_data
-    except Exception:
-        pass # 静默处理超时
+    except Exception as e:
+        print(f"云端读取超时或失败，降级本地内存: {e}")
 
-    # 2. 尝试本地内存
+    # 尝试本地内存
     if code in sessions_db:
         return sessions_db[code]
 
-    # 3. 都没有，创建新房间
+    # 都没有，创建新房间
     new_session = {
         "code": code,
         "participants": {"A": False, "B": False},
@@ -103,16 +109,19 @@ def save_session(session):
     sessions_db[code] = session
     
     # 2. 尝试存入云端
-    url = f"{UPSTASH_URL}/set/{code}"
+    url = f"{UPSTASH_URL}/"
     val_str = json.dumps(session, ensure_ascii=False)
-    req = urllib.request.Request(url, data=val_str.encode('utf-8'), headers={
+    payload = json.dumps(["SET", code, val_str]).encode('utf-8')
+    req = urllib.request.Request(url, data=payload, headers={
         "Authorization": f"Bearer {UPSTASH_TOKEN}",
         "Content-Type": "application/json"
     }, method='POST')
+    
     try:
-        urllib.request.urlopen(req, timeout=1.5)
-    except Exception:
-        pass # 静默处理超时
+        # 【核心修复】：超时放宽到 5.0 秒，确保关键的“加入”、“发消息”必须写进数据库！
+        urllib.request.urlopen(req, timeout=5.0)
+    except Exception as e:
+        print(f"云端写入超时，已存入本地保底: {e}")
 
 def format_chat_history(chat_list):
     history = []
@@ -383,7 +392,6 @@ def agree():
     if session["agreed"]["A"] and session["agreed"]["B"]:
         session["freeze"]["phase"] = "finished"
         
-        # 新增：AI生成专属成长报告
         report_prompt = f"""
         你是一位温柔的儿童心理导师。两位7-11岁的孩子刚刚成功解决了一个冲突（情境：{session['scenario']['title']}）。
         请为他们生成一份简短的专属【成长报告】。
