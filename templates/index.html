@@ -8,25 +8,55 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=58" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=68" />
 
     <style>
-      /* ==========================================
-         【1. 首页排版修复】：图片回归，按钮不换行
-         ========================================== */
+      /* 全局与排版 */
+      :root {
+          --primary: #3B82F6 !important; --primary-hover: #2563EB !important;
+          --secondary: #F8FAFC !important; --bg: #F0F4F8 !important;
+          --border: #E2E8F0 !important; --text: #334155 !important;
+      }
+      body { background-color: #F0F4F8 !important; }
+      .app { border: 1px solid rgba(255,255,255,0.5) !important; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08) !important; border-radius: 24px; margin-top: 2vh; height: 96vh; background: #FFFFFF !important; }
+      .card, .bubble, .input, .textarea, .btn, .chip, .presence, .systemNotice { border-width: 1px !important; border-color: #E2E8F0 !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important; }
+      .card { border-radius: 20px !important; }
+      .bubble { border-radius: 16px !important; background: #F8FAFC !important; text-align: left; }
+      .bubble--a { background: #FEF2F2 !important; border-color: #FEE2E2 !important; }
+      .bubble--b { background: #EFF6FF !important; border-color: #DBEAFE !important; }
+      .topbar { border-bottom: 1px solid #E2E8F0 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important; }
+      .brand__mark { background: #DBEAFE !important; color: #1E3A8A !important; border: none !important; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2) !important; }
+
       #screenHome.screen--active { display: flex; flex-direction: column; justify-content: center; }
-      .btn { white-space: nowrap !important; }
-      .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; }
+      .btn { white-space: nowrap !important; transition: all 0.2s ease !important; }
+      .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05) !important; }
+      .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; border: none !important; box-shadow: none !important; background: transparent !important;}
       .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
-      .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; box-shadow: 8px 8px 0px #FDE047; }
+      .hero__image { width: 100%; max-width: 360px; height: auto; border: 1px solid #E2E8F0; border-radius: 24px; box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15) !important; }
 
       /* ==========================================
-         【2. 全屏加载与和好动画】
+         【1. 巨无霸麦克风UI增强】
          ========================================== */
+      .btn--mic { 
+          width: 54px; height: 54px; font-size: 24px; border-radius: 50%; border: none !important; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+          background: linear-gradient(135deg, #DBEAFE, #EFF6FF) !important; color: #2563EB !important; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2) !important;
+      }
+      .btn--mic:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3) !important; }
+      .btn--mic.recording { background: linear-gradient(135deg, #EF4444, #FCA5A5) !important; color: white !important; animation: superPulse 1s infinite; }
+      @keyframes superPulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+      .mic-text-hint { font-size: 15px; font-weight: bold; color: #3B82F6; margin-top: 10px; }
+
+      /* ==========================================
+         【2. 接收方专属降温遮罩】
+         ========================================== */
+      #waitRephraseOverlay { background: rgba(240, 249, 255, 0.95); } /* 柔和蓝底 */
+      .pause-box { text-align: center; max-width: 500px; padding: 40px; background: white; border-radius: 24px; box-shadow: 0 20px 50px rgba(59,130,246,0.15); border: 1px solid #BFDBFE; }
+
       .modal.loadingOverlay { position: fixed; inset: 0; z-index: 10001; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
-      .modal.loadingOverlay[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
+      .modal.loadingOverlay[aria-hidden="false"], .modal#waitRephraseOverlay[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
+      
       .magic-spinner { font-size: 80px; animation: magicWand 2.5s infinite linear; margin-bottom: 24px; }
-      .loading-text { font-size: 18px; font-weight: 700; color: #D97706; text-align: center; }
+      .loading-text { font-size: 18px; font-weight: 700; color: #2563EB; text-align: center; }
       @keyframes magicWand { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
 
       #celebrationOverlay { position: fixed; inset: 0; z-index: 9999; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
@@ -34,68 +64,49 @@
       @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
       @keyframes floatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
       .celeb-icon { font-size: 100px; animation: popIn 0.6s ease forwards, floatBounce 2s ease-in-out infinite 0.6s; }
-      .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
+      .celeb-text { color: #2563EB; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
 
-      /* ==========================================
-         【3. 语音控制与卡片UI】
-         ========================================== */
-      .btn--mic, .btn--speak { padding: 8px; border-radius: 50%; background: var(--secondary); border: none; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-      .btn--mic { color: var(--primary); }
-      .btn--mic:hover, .btn--speak:hover { background: #DBEAFE; transform: scale(1.1); }
-      .btn--mic.recording { background: var(--danger); color: white; animation: pulse 1s infinite; }
-      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+      .btn-sound { background: rgba(255,255,255,0.8); border: 1px solid #E2E8F0; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+      .btn-sound:hover { background: #FFFFFF; transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+      .btn-sound.playing { background: #DBEAFE; border-color: #93C5FD; animation: soundPulse 1.5s infinite; }
+      @keyframes soundPulse { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); } 70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
 
-      .btn-sound { background: rgba(255,255,255,0.5); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-      .btn-sound:hover { background: rgba(255,255,255,0.9); transform: scale(1.1); }
-      .btn-sound.playing { background: #FDE047; animation: soundPulse 1.5s infinite; }
-      @keyframes soundPulse { 0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.6); } 70% { box-shadow: 0 0 0 8px rgba(253, 224, 71, 0); } 100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); } }
+      .composer__row { display: flex; gap: 12px; align-items: center; width: 100%; }
+      .composer__row .input { flex: 1; border-radius: 20px; padding: 16px; }
+      .composer__row .btn--primary { flex-shrink: 0; background: #3B82F6 !important; border: none !important; color: white !important; }
 
-      .composer__row { display: flex; gap: 8px; align-items: center; width: 100%; }
-      .composer__row .btn--mic { flex-shrink: 0; width: 44px; height: 44px; padding: 0; }
-      .composer__row .input { flex: 1; }
-      .composer__row .btn--primary { flex-shrink: 0; }
-
-      .heart-match-container { border-width: 3px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+      .heart-match-container { border-width: 1px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: all 0.3s ease; }
       .heart-track { height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
-      .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); text-shadow: 0 4px 6px rgba(0,0,0,0.15); z-index: 5; }
+      .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); text-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 5; }
       .heart-left { left: 0%; }
       .heart-right { right: 0%; }
       .match-text { font-size: 24px; font-weight: 900; margin-top: 10px; }
       .match-subtext { font-size: 16px; font-weight: 700; margin-top: 5px; margin-bottom: 15px; }
 
-      .typing-indicator { display: none; padding: 12px 16px; background: #FEF3C7; border-radius: 12px; font-size: 14px; color: #B45309; align-items: center; gap: 8px; width: fit-content; margin: 10px 0; border: 2px solid #1E293B; }
+      .typing-indicator { display: none; padding: 12px 16px; background: #F0F9FF; border-radius: 16px; font-size: 14px; color: #2563EB; align-items: center; gap: 8px; width: fit-content; margin: 10px 0; border: 1px solid #BAE6FD; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.05); }
       .typing-indicator.active { display: flex; }
-      .dots span { display: inline-block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+      .dots span { display: inline-block; width: 6px; height: 6px; background: #3B82F6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
       /* ==========================================
-         【4. 完美复刻精美蓝色弹窗 UI (已修改为蓝色系)】
+         【3. AI专属报告UI增强】
          ========================================== */
-      .report-card-super { background: #BFDBFE; border: 4px solid #2B3245; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 8px 0 #2B3245; }
+      .report-card-super { background: linear-gradient(135deg, #FFFFFF, #EFF6FF); border: 1px solid #BFDBFE; border-radius: 24px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 50px rgba(59, 130, 246, 0.15); max-width: 600px; }
       .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
-      .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 600; }
-      .super-badges { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
-      .super-badge-item { background: white; padding: 8px 20px; border-radius: 30px; font-weight: 900; color: #2563EB; border: 2px solid #93C5FD; box-shadow: 0 4px 0 #93C5FD; }
-      .super-tip-box { background: #EFF6FF; padding: 15px; border-radius: 12px; margin: 20px 0; font-size: 14px; text-align: left; color: #1E3A8A; border: 2px dashed #60A5FA; line-height: 1.6; }
-      .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
-      .super-btn { border-radius: 30px; padding: 12px 24px; font-weight: 900; font-size: 16px; border: 3px solid #2B3245; box-shadow: 0 4px 0 #2B3245; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
-      .super-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #2B3245; }
-      .super-btn-ghost { background: white; color: #2563EB; }
-      .super-btn-primary { background: #2563EB; color: white; }
+      .super-tip-box { background: rgba(255, 255, 255, 0.9); padding: 16px; border-radius: 16px; margin: 15px 0; font-size: 15px; text-align: left; line-height: 1.6; box-shadow: 0 4px 10px rgba(0,0,0,0.02);}
+      .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+      .super-btn { border-radius: 30px; padding: 12px 28px; font-weight: 700; font-size: 16px; border: none; cursor: pointer; transition: all 0.2s ease; }
+      .super-btn-ghost { background: white; color: #3B82F6; border: 1px solid #BFDBFE; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+      .super-btn-primary { background: #3B82F6; color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
 
-      /* ==========================================
-         【5. 终极修复：聊天气泡完美左右对齐】
-         ========================================== */
       .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: flex-start !important; }
       .msg--right { flex-direction: row-reverse !important; }
-      .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; font-weight: 900 !important; border: 2px solid #064E3B !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0; }
-      .avatar--a, .avatar--b { flex-shrink: 0; }
-
+      .avatar--j { background: #D1FAE5 !important; color: #047857 !important; border: 1px solid #A7F3D0 !important; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.15) !important; flex-shrink: 0; }
+      .avatar--a { background: #FEE2E2 !important; color: #B91C1C !important; border: 1px solid #FECACA !important; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.15) !important; flex-shrink: 0; }
+      .avatar--b { background: #DBEAFE !important; color: #1D4ED8 !important; border: 1px solid #BFDBFE !important; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15) !important; flex-shrink: 0; }
       .msg-content-wrap { display: flex; flex-direction: column; max-width: 85%; }
       .msg:not(.msg--right) .msg-content-wrap { align-items: flex-start; }
       .msg--right .msg-content-wrap { align-items: flex-end; }
-
-      .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; }
     </style>
   </head>
   <body>
@@ -107,6 +118,19 @@
     <div id="celebrationOverlay">
         <div class="celeb-icon">👦🤝👧💖🌸✨</div>
         <div class="celeb-text">心心相印！太棒了，误会解除啦！</div>
+    </div>
+
+    <div class="modal loadingOverlay" id="waitRephraseOverlay" aria-hidden="true" style="z-index: 9900;">
+        <div class="pause-box">
+            <div style="font-size: 60px; margin-bottom: 15px; animation: floatBounce 2s infinite;">⏸️</div>
+            <h2 style="color: #1E3A8A; font-size: 24px; font-weight: 900; margin-bottom: 10px;">我们先暂停一下</h2>
+            <p style="font-size: 16px; color: #475569; line-height: 1.6; margin-bottom: 20px;">
+                生气的话就像小火苗，吵架会让火越来越大哦！🔥<br><br>
+                对方现在正在法官精灵的帮助下，重新组织语言。<br>
+                我们耐心等等看，换一种温柔的说法，是不是更能解决问题呢？
+            </p>
+            <div style="color: #3B82F6; font-weight: 700;">等待对方重新发送消息...</div>
+        </div>
     </div>
 
     <div class="app">
@@ -161,7 +185,7 @@
               <div class="card card--tight contextCard">
                 <div class="card__title" style="display:flex; justify-content:space-between; align-items:center;">
                    <span>📖 本次情境</span>
-                   <button class="btn btn--speak" style="font-size: 12px; padding: 4px 8px; border-radius: 8px;" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停">🔊 读给我听</button>
+                   <button class="btn btn--speak" style="font-size: 12px; padding: 4px 8px; border-radius: 8px; background: white; border: 1px solid #E2E8F0;" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停">🔊 读给我听</button>
                 </div>
                 <div class="story" id="storyText"></div>
                 <div class="divider"></div>
@@ -186,7 +210,7 @@
 
                 <div style="padding: 0 16px;">
                     <div class="typing-indicator" id="typingIndicator">
-                       <div class="avatar avatar--j" style="width:24px; height:24px; border: 2px solid #1E293B; background: #A7F3D0; display:flex; align-items:center; justify-content:center;">
+                       <div class="avatar avatar--j" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center;">
                            <span style="color:#064E3B; font-weight:900; font-size:12px;">法</span>
                        </div>
                        法官精灵正在努力思考中... <div class="dots"><span></span><span></span><span></span></div>
@@ -195,12 +219,12 @@
 
                 <div class="composer">
                   <div id="negotiateActions" style="display: none; padding-bottom: 12px; text-align: center;">
-                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: var(--good); border-color: var(--good); color: white; width: 100%;">🤝 我们商量好了 (点击拉钩)</button>
+                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: var(--good); border-color: var(--good); color: white; width: 100%; font-size: 18px; padding: 16px;">🤝 我们商量好了 (点击拉钩)</button>
                   </div>
                   <div class="composer__row">
-                    <button class="btn btn--mic" id="btnMicChat" title="点击麦克风开始录音">🎤</button>
-                    <input class="input input--big" id="composerInput" placeholder="打字或点击左侧麦克风说话…" autocomplete="off" />
-                    <button class="btn btn--primary" id="btnSend" type="button">发送</button>
+                    <button class="btn btn--mic" id="btnMicChat" title="点击麦克风直接说话">🎤</button>
+                    <input class="input input--big" id="composerInput" placeholder="点击左侧麦克风说话，或在此打字…" autocomplete="off" />
+                    <button class="btn btn--primary" id="btnSend" type="button" style="padding: 0 24px;">发送</button>
                   </div>
                   <div class="composer__sub" id="composerSub"></div>
                 </div>
@@ -221,17 +245,22 @@
         </div>
         <div class="modal__body">
           <div class="modal__desc" id="modalDesc" style="margin-bottom: 12px;"></div>
+          
+          <div style="display: flex; flex-direction: column; align-items: center; padding: 20px 0; border: 1px dashed #93C5FD; border-radius: 16px; background: #F0F9FF; margin-bottom: 16px;">
+              <button class="btn btn--mic" id="btnMicModal" style="width: 80px; height: 80px; font-size: 36px; box-shadow: 0 8px 25px rgba(59,130,246,0.3) !important;">🎤</button>
+              <div class="mic-text-hint" id="modalMicHint">点击麦克风，直接说出你的想法</div>
+          </div>
+
           <label class="field">
-            <span class="field__label" id="modalFieldLabel">请打字或点击麦克风语音输入：</span>
+            <span class="field__label" style="color: #64748B; font-weight: normal;">如果不想说话，也可以在这里打字：</span>
             <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 8px;">
-              <button class="btn btn--mic" id="btnMicModal" title="点击麦克风开始录音" style="margin-top: 5px;">🎤</button>
-              <textarea class="textarea" id="modalText" rows="4" placeholder="在这里输入..."></textarea>
+              <textarea class="textarea" id="modalText" rows="2" placeholder="输入你想说的话..."></textarea>
             </div>
           </label>
         </div>
         <div class="modal__footer">
           <button class="btn btn--ghost" id="modalCancel" type="button">稍后</button>
-          <button class="btn btn--primary" id="modalSubmit" type="button">✨ 提交我的想法</button>
+          <button class="btn btn--primary" id="modalSubmit" type="button" style="font-size: 16px; padding: 10px 30px;">✨ 提交我的想法</button>
         </div>
       </div>
     </div>
@@ -241,17 +270,21 @@
       <div class="modal__panel" role="document" style="background: transparent; box-shadow: none;">
         <div class="report-card-super">
           <h2>🏆 调解大成功！</h2>
-          <p>你们通过沟通解开了误会，真是太棒了！</p>
+          <p style="font-size: 18px; color: #2563EB; font-weight: 900; margin-bottom: 10px;">这是法官精灵为你们颁发的专属《成长报告》</p>
 
-          <div class="super-badges">
-            <div class="super-badge-item">👂 倾听小达人</div>
-            <div class="super-badge-item">🗣️ 表达小天才</div>
-            <div class="super-badge-item">🤝 和平使者</div>
+          <div class="super-tip-box" style="border-color: #A7F3D0; background: #ECFDF5;">
+            <strong style="color: #047857;">💖 闪光点：</strong><br>
+            <span id="finalPraise" style="color: #065F46;">解析中...</span>
           </div>
 
-          <div class="super-tip-box">
-            <strong>💡 法官精灵的悄悄话：</strong><br>
-            遇到矛盾时，深呼吸，勇敢说出“我需要什么”，而不是直接发脾气。你们今天做得非常好，继续保持哦！
+          <div class="super-tip-box" style="border-color: #BFDBFE; background: #EFF6FF;">
+            <strong style="color: #1D4ED8;">🌱 你们的成长：</strong><br>
+            <span id="finalGrowth" style="color: #1E3A8A;">解析中...</span>
+          </div>
+
+          <div class="super-tip-box" style="border-color: #FDE047; background: #FEF9C3;">
+            <strong style="color: #A16207;">💡 精灵小贴士：</strong><br>
+            <span id="finalTip" style="color: #854D0E;">解析中...</span>
           </div>
 
           <div class="super-btn-group">
@@ -330,27 +363,25 @@
             if(btnElement) { if (!btnElement.dataset.origText) btnElement.dataset.origText = btnElement.innerHTML; btnElement.innerHTML = '⏸️'; btnElement.classList.add('playing'); window.currentSpeakingBtn = btnElement; }
         };
 
-        // ==========================================
-        // 【彻底解决】：抛弃难用的长按，改为“点击录音、再点停止”
-        // ==========================================
-        const setupSpeechRecognition = (btnId, inputId) => {
+        // 点击式语音识别 (附带情绪分析 UI 提示)
+        const setupSpeechRecognition = (btnId, inputId, isModal = false) => {
             const btn = $(btnId); const input = $(inputId);
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { btn.style.display = 'none'; return; }
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
             recognition.lang = 'zh-CN';
-            recognition.continuous = true; // 允许持续说话，中途喘气不会断
-            recognition.interimResults = true; // 实时上屏
+            recognition.continuous = true;
+            recognition.interimResults = true;
 
             let isRecording = false;
             let originalValue = "";
 
-            // 无论发生什么，瞬间恢复图标状态
             const stopRecordingUI = () => {
                 isRecording = false;
                 btn.classList.remove("recording");
-                input.placeholder = "打字或点击麦克风说话...";
+                input.placeholder = isModal ? "输入你想说的话..." : "点击左侧麦克风说话，或在此打字…";
+                if(isModal) $("modalMicHint").textContent = "点击麦克风，直接说出你的想法";
                 try { recognition.stop(); } catch(e) {}
             };
 
@@ -358,7 +389,8 @@
                 isRecording = true;
                 btn.classList.add("recording");
                 originalValue = input.value; 
-                input.placeholder = "🔴 正在听你说... (说完请再次点击麦克风停止)";
+                input.placeholder = "🔴 正在倾听你的声音与情绪... (说完点麦克风结束)";
+                if(isModal) $("modalMicHint").textContent = "🔴 正在倾听... (说完再次点击结束)";
                 try { recognition.start(); } catch(e) {}
             };
 
@@ -372,26 +404,23 @@
 
             recognition.onerror = (event) => {
                 console.error("语音识别错误:", event.error);
+                if(event.error === 'not-allowed') {
+                    input.placeholder = "⚠️ 麦克风受限";
+                    alert("【麦克风权限被拦截！】\n请检查浏览器地址栏左侧是否允许了麦克风。");
+                }
                 stopRecordingUI();
             };
 
-            recognition.onend = () => {
-                stopRecordingUI();
-            };
+            recognition.onend = () => { stopRecordingUI(); };
 
-            // 【核心】：只绑定点击事件，点一下开，再点一下关！
             btn.onclick = (e) => {
                 e.preventDefault();
-                if (isRecording) {
-                    stopRecordingUI(); // 如果正在录，立刻手动停止并恢复UI
-                } else {
-                    startRecording(); // 如果没在录，开始录
-                }
+                if (isRecording) { stopRecordingUI(); } else { startRecording(); }
             };
         };
 
-        setupSpeechRecognition('btnMicChat', 'composerInput');
-        setupSpeechRecognition('btnMicModal', 'modalText');
+        setupSpeechRecognition('btnMicChat', 'composerInput', false);
+        setupSpeechRecognition('btnMicModal', 'modalText', true);
 
         function randomCode() { const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let out = ""; for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)]; return out; }
         function setActiveScreen(which) { screenHome.classList.remove("screen--active"); screenChat.classList.remove("screen--active"); if (which === "home") screenHome.classList.add("screen--active"); if (which === "chat") screenChat.classList.add("screen--active"); }
@@ -487,7 +516,6 @@
               composerSub.textContent = "对话已暂停，请在弹窗中说出你的想法。";
               if (modal.getAttribute("aria-hidden") !== "false") {
                   const triggeredByMe = session.freeze.triggeredBy === appState.role;
-                  
                   const triggerTxt = session.freeze.triggerText || "刚才说的话";
                   const blockquoteHtml = `<div style="background: #FEE2E2; border-left: 4px solid #EF4444; padding: 12px; margin: 12px 0; border-radius: 8px; color: #991B1B; font-weight: 700; font-size: 15px; text-align: left;">"${escapeHtml(triggerTxt)}"</div>`;
 
@@ -508,16 +536,37 @@
               }
           }
           else if (phase === "rephrase") {
-              if (session.freeze.triggeredBy === appState.role) { composerSub.textContent = "请按照精灵的提示，重新好好说一句话吧！"; }
-              else { composerSub.textContent = "等待对方重新整理语言中..."; btnSend.disabled = true; composerInput.disabled = true; $("btnMicChat").disabled = true; }
+              if (session.freeze.triggeredBy === appState.role) { 
+                  // 触发者：隐藏全屏遮罩，提示重新输入
+                  $("waitRephraseOverlay").setAttribute("aria-hidden", "true");
+                  composerSub.textContent = "请按照精灵的提示，重新好好说一句话吧！"; 
+              } else { 
+                  // 接收方：弹出全屏降温遮罩！
+                  $("waitRephraseOverlay").setAttribute("aria-hidden", "false");
+                  composerSub.textContent = "等待对方重新整理语言中..."; 
+                  btnSend.disabled = true; composerInput.disabled = true; $("btnMicChat").disabled = true; 
+              }
               if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; }
           }
           else if (phase === "negotiate") {
+              $("waitRephraseOverlay").setAttribute("aria-hidden", "true"); // 确保遮罩关闭
               composerSub.textContent = "你们的想法对齐啦！商量好后点击上方【达成一致】！";
               if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; }
           }
           else if (phase === "finished") {
+              $("waitRephraseOverlay").setAttribute("aria-hidden", "true"); // 确保遮罩关闭
               if ($("celebrationOverlay").classList.contains("show") === false && finishModal.getAttribute("aria-hidden") === "true") {
+                  
+                  // 【核心】：将 AI 生成的专属成长报告填充到弹窗中
+                  const finalReport = session.freeze.finalReport || {
+                      praise: "你们展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
+                      growth: "你们学会了‘停下来想一想’，并勇敢说出了感受，这就是最大的成长！",
+                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用‘我希望...’来表达哦！"
+                  };
+                  $("finalPraise").textContent = finalReport.praise;
+                  $("finalGrowth").textContent = finalReport.growth;
+                  $("finalTip").textContent = finalReport.tip;
+
                   const overlay = $("celebrationOverlay");
                   overlay.classList.add("show");
                   setTimeout(() => {
@@ -526,7 +575,11 @@
                   }, 3000);
               }
           }
-          else { composerSub.textContent = ""; if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; } }
+          else { 
+              $("waitRephraseOverlay").setAttribute("aria-hidden", "true");
+              composerSub.textContent = ""; 
+              if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; } 
+          }
         }
 
         function startSync() {
