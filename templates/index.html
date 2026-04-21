@@ -12,7 +12,7 @@
 
     <style>
       /* ==========================================
-         【1. 首页排版修复】：图片回归，按钮不换行
+         【1. 首页排版修复】
          ========================================== */
       #screenHome.screen--active { display: flex; flex-direction: column; justify-content: center; }
       .btn { white-space: nowrap !important; }
@@ -37,23 +37,52 @@
       .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
 
       /* ==========================================
-         【3. 语音控制与卡片UI】
+         【3. 巨无霸麦克风与输入区（彻底解决低龄交互）】
          ========================================== */
-      .btn--mic, .btn--speak { padding: 8px; border-radius: 50%; background: var(--secondary); border: none; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-      .btn--mic { color: var(--primary); }
-      .btn--mic:hover, .btn--speak:hover { background: #DBEAFE; transform: scale(1.1); }
-      .btn--mic.recording { background: var(--danger); color: white; animation: pulse 1s infinite; }
-      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+      .btn--speak { padding: 8px; border-radius: 50%; background: var(--secondary); border: none; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+      .btn--speak:hover { background: #DBEAFE; transform: scale(1.1); }
+      
+      .btn--mic { 
+          width: 64px !important; 
+          height: 64px !important; 
+          font-size: 30px !important; 
+          border-radius: 50% !important; 
+          background: #FDE047 !important; /* 明黄色，吸引儿童注意 */
+          border: 3px solid #1E293B !important; /* 粗黑边，符合整体UI */
+          box-shadow: 0 4px 0 #1E293B !important; 
+          cursor: pointer; 
+          display: inline-flex; 
+          align-items: center; 
+          justify-content: center; 
+          transition: all 0.1s !important;
+          flex-shrink: 0;
+          color: #1E293B !important;
+          padding: 0 !important;
+      }
+      .btn--mic:hover {
+          transform: translateY(2px) !important;
+          box-shadow: 0 2px 0 #1E293B !important;
+      }
+      .btn--mic.recording {
+          background: #EF4444 !important; /* 录音时变成红色 */
+          color: white !important;
+          animation: superPulse 1s infinite !important;
+          box-shadow: none !important;
+          border-color: transparent !important;
+      }
+      @keyframes superPulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
+      /* 配合巨无霸麦克风，加宽加高聊天输入栏 */
+      .composer__row { display: flex; gap: 12px; align-items: center; width: 100%; margin-top: 5px; }
+      .composer__row .input { flex: 1; height: 64px !important; border-radius: 32px !important; font-size: 16px; padding: 0 24px; border: 3px solid #1E293B !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+      .composer__row .btn--primary { flex-shrink: 0; height: 64px !important; border-radius: 32px !important; font-size: 18px !important; font-weight: 900 !important; padding: 0 32px !important; border: 3px solid #1E293B !important; box-shadow: 0 4px 0 #1E293B !important; transition: all 0.1s; }
+      .composer__row .btn--primary:active { transform: translateY(4px); box-shadow: 0 0 0 #1E293B !important; }
+
+      /* 语音朗读按钮 */
       .btn-sound { background: rgba(255,255,255,0.5); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
       .btn-sound:hover { background: rgba(255,255,255,0.9); transform: scale(1.1); }
       .btn-sound.playing { background: #FDE047; animation: soundPulse 1.5s infinite; }
       @keyframes soundPulse { 0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.6); } 70% { box-shadow: 0 0 0 8px rgba(253, 224, 71, 0); } 100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); } }
-
-      .composer__row { display: flex; gap: 8px; align-items: center; width: 100%; }
-      .composer__row .btn--mic { flex-shrink: 0; width: 44px; height: 44px; padding: 0; }
-      .composer__row .input { flex: 1; }
-      .composer__row .btn--primary { flex-shrink: 0; }
 
       .heart-match-container { border-width: 3px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; }
       .heart-track { height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
@@ -69,7 +98,7 @@
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
       /* ==========================================
-         【4. 完美复刻精美蓝色弹窗 UI (保留原有UI风格)】
+         【4. UI 组件（保留你的黑色粗边框风格）】
          ========================================== */
       .report-card-super { background: #BFDBFE; border: 4px solid #2B3245; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 8px 0 #2B3245; }
       .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
@@ -83,9 +112,6 @@
       .super-btn-ghost { background: white; color: #2563EB; }
       .super-btn-primary { background: #2563EB; color: white; }
 
-      /* ==========================================
-         【5. 终极修复：聊天气泡完美左右对齐】
-         ========================================== */
       .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: flex-start !important; }
       .msg--right { flex-direction: row-reverse !important; }
       .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; font-weight: 900 !important; border: 2px solid #064E3B !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0; }
@@ -95,20 +121,14 @@
       .msg--right .msg-content-wrap { align-items: flex-end; }
       .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; }
 
-      /* ==========================================
-         【新增功能 UI 样式（适配你的黑色粗边框风格）】
-         ========================================== */
-      /* 降温遮罩 */
+      /* 降温遮罩与弹窗麦克风 */
       #waitRephraseOverlay { background: rgba(255, 255, 255, 0.95); z-index: 9900; }
       .pause-box { text-align: center; max-width: 500px; padding: 40px; background: #EFF6FF; border-radius: 20px; border: 4px solid #1E293B; box-shadow: 8px 8px 0 #FDE047; }
       .pause-box h2 { color: #1E3A8A; font-size: 24px; font-weight: 900; margin-bottom: 10px; }
       .pause-box p { font-size: 16px; color: #1E293B; line-height: 1.6; margin-bottom: 20px; font-weight: 600; }
 
-      /* 弹窗巨无霸麦克风 (带粗框) */
       .modal-mic-container { display: flex; flex-direction: column; align-items: center; padding: 20px 0; border: 2px dashed #94A3B8; border-radius: 16px; background: #F8FAFC; margin-bottom: 16px; }
-      #btnMicModal { width: 80px; height: 80px; font-size: 36px; background: #FDE047; border: 3px solid #1E293B; box-shadow: 0 4px 0 #1E293B; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;}
-      #btnMicModal:hover { transform: translateY(2px); box-shadow: 0 2px 0 #1E293B; }
-      #btnMicModal.recording { background: #EF4444; color: white; animation: pulse 1s infinite; box-shadow: none; border-color: transparent; }
+      #btnMicModal { width: 80px !important; height: 80px !important; font-size: 36px !important; }
       .mic-text-hint { font-size: 16px; font-weight: 900; color: #1E293B; margin-top: 15px; }
 
     </style>
@@ -225,11 +245,13 @@
                   <div id="negotiateActions" style="display: none; padding-bottom: 12px; text-align: center;">
                     <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: var(--good); border-color: var(--good); color: #064E3B; width: 100%;">🤝 我们商量好了 (点击拉钩)</button>
                   </div>
+                  
                   <div class="composer__row">
                     <button class="btn btn--mic" id="btnMicChat" title="点击麦克风直接说话">🎤</button>
-                    <input class="input input--big" id="composerInput" placeholder="打字或点击左侧麦克风说话…" autocomplete="off" />
+                    <input class="input input--big" id="composerInput" placeholder="点左边麦克风说话，或在这打字…" autocomplete="off" />
                     <button class="btn btn--primary" id="btnSend" type="button">发送</button>
                   </div>
+                  
                   <div class="composer__sub" id="composerSub"></div>
                 </div>
               </div>
@@ -251,7 +273,7 @@
           <div class="modal__desc" id="modalDesc" style="margin-bottom: 12px;"></div>
           
           <div class="modal-mic-container">
-              <button id="btnMicModal" title="点击麦克风直接说话">🎤</button>
+              <button class="btn btn--mic" id="btnMicModal" title="点击麦克风直接说话">🎤</button>
               <div class="mic-text-hint" id="modalMicHint">点击麦克风，直接说出你的想法</div>
           </div>
 
@@ -384,7 +406,7 @@
             const stopRecordingUI = () => {
                 isRecording = false;
                 btn.classList.remove("recording");
-                input.placeholder = isModal ? "输入你想说的话..." : "点击左侧麦克风说话，或在此打字…";
+                input.placeholder = isModal ? "输入你想说的话..." : "点左边麦克风说话，或在这打字…";
                 if(isModal) $("modalMicHint").textContent = "点击麦克风，直接说出你的想法";
                 try { recognition.stop(); } catch(e) {}
             };
