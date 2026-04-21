@@ -153,7 +153,7 @@ def join():
           "objective_fact": "客观事实",
           "storyA": "今天...（A的视角）",
           "storyB": "今天...（B的视角）",
-          "systemRule": "系统判定：你处于{arousal}唤醒状态，由{who}先发言。"
+          "systemRule": "法官精灵小提示：你现在心里有点着急哦，请由{who}先发言吧。"
         }
         """
         scenario_res = call_agent(agent1_prompt, "请生成儿童冲突剧本。", agent_name="场控 Agent", temperature=0.7)
@@ -175,14 +175,14 @@ def join():
                 "objective_fact": "B看到一阵风快把A的标本吹跑了，想帮忙按住，却不小心压碎了。",
                 "storyA": "今天下午的自然课上，老师让我们在操场收集树叶做标本。我刚拼出一只漂亮的树叶蝴蝶放在椅子上晾干。回头就看到B一巴掌拍在我的树叶蝴蝶上，标本瞬间全碎了！我快气哭了，B绝对是故意的，就是嫉妒我！",
                 "storyB": "今天下午的自然课上，我抬头发现突然刮起一阵风，A放在长椅上的树叶蝴蝶马上要被吹跑了。我急忙冲过去想用手帮A按住。结果跑得太急没控制好力气，一巴掌把树叶压碎了。我真的是想帮忙的，但A现在红着眼睛瞪着我，我好委屈。",
-                "systemRule": "系统判定：你处于高唤醒状态，由A先发言。"
+                "systemRule": "法官精灵小提示：你现在心里有点着急哦，请由A先发言吧。"
             }
 
     if not any(m.get("meta") == "welcome" for m in session["chat"]):
         session["chat"].append({
             "id": f"sys_{time.time()}",
             "kind": "system",
-            "text": "欢迎进入调解场域。请先阅读情境，再开始对话。",
+            "text": "🧚 法官精灵：欢迎来到魔法调解屋！请先看看上面的故事，再开始聊天吧。",
             "meta": "welcome"
         })
 
@@ -206,7 +206,7 @@ def send_message():
     if session["freeze"]["phase"] == "rephrase":
         session["freeze"]["phase"] = "negotiate"
         session["chat"].append({"id": f"m_{time.time()}", "kind": "chat", "from": role, "text": text})
-        session["chat"].append({"id": f"sys_{time.time()}_neg_start", "kind": "system", "text": "系统提示：已进入妥协与规则制定阶段。请讨论方案并点击达成一致。", "meta": "negotiate"})
+        session["chat"].append({"id": f"sys_{time.time()}_neg_start", "kind": "system", "text": "💡 精灵小提示：误会解开啦！现在请一起商量个解决办法，商量好后点击上面的【达成一致】哦。", "meta": "negotiate"})
     elif session["freeze"]["phase"] not in ["rephrase", "finished"] and not session["freeze"]["active"]:
         
         history_str = format_chat_history(session["chat"])
@@ -245,7 +245,7 @@ def send_message():
             session["chat"].append({
                 "id": f"sys_{time.time()}_freeze",
                 "kind": "system",
-                "text": "检测到对话情绪张力过高，场控Agent已强制冻结对话，阻断情绪互激。请完成弹窗双盲采集。",
+                "text": "🚨 法官精灵发现火药味有点重哦！为了不让小火苗变成大火灾，我们先暂停一下，深呼吸~ 请在弹窗里告诉精灵你的想法。",
                 "meta": "freeze"
             })
     else:
@@ -355,12 +355,12 @@ def submit_freeze():
         session["chat"].append({"id": f"judge_{time.time()}", "kind": "judgeCard", "extra": result})
 
         if result["route"] == "rephrase":
-            session["chat"].append({"id": f"sys_{time.time()}_guide", "kind": "system", "text": f"引导Agent：{result.get('guidance', '请换一种表达。')}", "meta": "rephrase", "target": triggered_by})
-            session["chat"].append({"id": f"sys_{time.time()}_comfort", "kind": "system", "text": f"引导Agent：{result.get('comfort', '抱抱你，等对方重新说。')}", "meta": "rephrase", "target": receiver})
+            session["chat"].append({"id": f"sys_{time.time()}_guide", "kind": "system", "text": f"💡 精灵小提示：{result.get('guidance', '请换一种温柔的表达哦。')}", "meta": "rephrase", "target": triggered_by})
+            session["chat"].append({"id": f"sys_{time.time()}_comfort", "kind": "system", "text": f"💖 精灵悄悄话：{result.get('comfort', '抱抱你，等对方重新整理一下语言。')}", "meta": "rephrase", "target": receiver})
         else:
-            session["chat"].append({"id": f"sys_{time.time()}_neg", "kind": "system", "text": "系统提示：心电波对齐！请讨论方案。", "meta": "negotiate"})
+            session["chat"].append({"id": f"sys_{time.time()}_neg", "kind": "system", "text": "💡 精灵小提示：你们的心电波对齐啦！现在一起商量个好办法吧。", "meta": "negotiate"})
     else:
-        msg_text = "一方已提交动机，等待另一方提交…"
+        msg_text = "⏳ 你已经说出真实想法啦，法官精灵正在等另一位小朋友说完..."
         if not any(m.get("text") == msg_text for m in session["chat"]):
             session["chat"].append({"id": f"sys_{time.time()}_wait", "kind": "system", "text": msg_text, "meta": "waiting"})
 
@@ -376,10 +376,6 @@ def agree():
     session = get_session(code)
     session["agreed"][role] = True
 
-    # ========================================================
-    # 【救命级修复】：取消双重验证！只要有人点拉钩，立刻结束！
-    # 彻底砍掉 AI 调用，采用 0 延迟动态模板，彻底消灭 Vercel 500 崩溃！
-    # ========================================================
     if session["freeze"]["phase"] != "finished":
         session["freeze"]["phase"] = "finished"
         
@@ -391,10 +387,10 @@ def agree():
             "tip": "法官精灵的交友秘籍：下次再遇到让你着急的事情，记得在心里数三秒，然后用‘我希望/我需要...’来表达，好朋友会更懂你哦！"
         }
 
-        session["chat"].append({"id": f"sys_{time.time()}_celeb", "kind": "system", "text": "太棒了！因为你们成功合作，调解训练顺利结束，拿到🌸 小红花！", "meta": "celebrate"})
-        session["chat"].append({"id": f"sys_{time.time()}_feel_A", "kind": "system", "text": "场控Agent：回想一下最开始生气的时刻，再看看现在，心里感觉怎么样？", "meta": "finished", "target": "A"})
-        session["chat"].append({"id": f"sys_{time.time()}_enc_A", "kind": "system", "text": "引导Agent：你今天做得很棒！学会了沟通解开误会！", "meta": "finished", "target": "A"})
-        session["chat"].append({"id": f"sys_{time.time()}_enc_B", "kind": "system", "text": "引导Agent：你是个善解人意的好搭档！没有陷入争吵，做得很棒！", "meta": "finished", "target": "B"})
+        session["chat"].append({"id": f"sys_{time.time()}_celeb", "kind": "system", "text": "🎉 太棒了！因为你们成功合作，误会解开啦，每人奖励一朵 🌸 小红花！", "meta": "celebrate"})
+        session["chat"].append({"id": f"sys_{time.time()}_feel_A", "kind": "system", "text": "🧚 法官精灵：回想一下最开始生气的时刻，再看看现在，心里感觉怎么样呀？", "meta": "finished", "target": "A"})
+        session["chat"].append({"id": f"sys_{time.time()}_enc_A", "kind": "system", "text": "🌟 精灵小广播：你今天做得很棒！学会了用沟通解开误会！", "meta": "finished", "target": "A"})
+        session["chat"].append({"id": f"sys_{time.time()}_enc_B", "kind": "system", "text": "🌟 精灵小广播：你是个善解人意的好搭档！没有陷入争吵，做得很棒！", "meta": "finished", "target": "B"})
 
     save_session(session)
     return jsonify(session)
