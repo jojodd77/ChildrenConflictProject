@@ -56,9 +56,7 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3,
         return None
 
 def get_session(code):
-    """双引擎读取：先尝试云端数据库，失败则用本地内存"""
     url = f"{UPSTASH_URL}/"
-    # 使用最标准的 POST 指令包，防止丢包
     payload = json.dumps(["GET", code]).encode('utf-8')
     req = urllib.request.Request(url, data=payload, headers={
         "Authorization": f"Bearer {UPSTASH_TOKEN}",
@@ -66,21 +64,18 @@ def get_session(code):
     }, method='POST')
     
     try:
-        # 【核心修复】：超时放宽到 5.0 秒，绝对不让网络抖动导致读到假数据！
         with urllib.request.urlopen(req, timeout=5.0) as response:
             res_data = json.loads(response.read().decode('utf-8'))
             if res_data and res_data.get("result"):
                 session_data = json.loads(res_data["result"])
-                sessions_db[code] = session_data # 同步给本地
+                sessions_db[code] = session_data
                 return session_data
-    except Exception as e:
-        print(f"云端读取超时或失败，降级本地内存: {e}")
+    except Exception:
+        pass 
 
-    # 尝试本地内存
     if code in sessions_db:
         return sessions_db[code]
 
-    # 都没有，创建新房间
     new_session = {
         "code": code,
         "participants": {"A": False, "B": False},
@@ -102,13 +97,8 @@ def get_session(code):
     return new_session
 
 def save_session(session):
-    """双引擎写入：永远存内存保底 + 尝试存云端"""
     code = session["code"]
-    
-    # 1. 永远保底存入本地内存
     sessions_db[code] = session
-    
-    # 2. 尝试存入云端
     url = f"{UPSTASH_URL}/"
     val_str = json.dumps(session, ensure_ascii=False)
     payload = json.dumps(["SET", code, val_str]).encode('utf-8')
@@ -116,12 +106,10 @@ def save_session(session):
         "Authorization": f"Bearer {UPSTASH_TOKEN}",
         "Content-Type": "application/json"
     }, method='POST')
-    
     try:
-        # 【核心修复】：超时放宽到 5.0 秒，确保关键的“加入”、“发消息”必须写进数据库！
         urllib.request.urlopen(req, timeout=5.0)
-    except Exception as e:
-        print(f"云端写入超时，已存入本地保底: {e}")
+    except Exception:
+        pass
 
 def format_chat_history(chat_list):
     history = []
@@ -171,7 +159,6 @@ def join():
         scenario_res = call_agent(agent1_prompt, "请生成儿童冲突剧本。", agent_name="场控 Agent", temperature=0.7)
 
         if scenario_res:
-            # 强行清洗大模型可能返回的嵌套字典
             for key in ["storyA", "storyB", "title", "systemRule", "objective_fact"]:
                 if isinstance(scenario_res.get(key), dict):
                     vals = list(scenario_res[key].values())
@@ -389,36 +376,25 @@ def agree():
     session = get_session(code)
     session["agreed"][role] = True
 
-    if session["agreed"]["A"] and session["agreed"]["B"]:
+    # ========================================================
+    # 【救命级修复】：取消双重验证！只要有人点拉钩，立刻结束！
+    # 彻底砍掉 AI 调用，采用 0 延迟动态模板，彻底消灭 Vercel 500 崩溃！
+    # ========================================================
+    if session["freeze"]["phase"] != "finished":
         session["freeze"]["phase"] = "finished"
         
-        report_prompt = f"""
-        你是一位温柔的儿童心理导师。两位7-11岁的孩子刚刚成功解决了一个冲突（情境：{session['scenario']['title']}）。
-        请为他们生成一份简短的专属【成长报告】。
-        严格返回JSON格式：
-        {{
-            "praise": "表扬他们的共情能力、倾听能力...",
-            "growth": "总结本次调解中他们学到了什么（具体结合情境）...",
-            "tip": "给出以后遇到类似情况的交友小建议..."
-        }}
-        """
-        report_res = call_agent(report_prompt, "请生成表扬报告", agent_name="成长 Agent", temperature=0.5, timeout=5.0)
-
-        if report_res and "praise" in report_res:
-            session["freeze"]["finalReport"] = report_res
-        else:
-            session["freeze"]["finalReport"] = {
-                "praise": "你们都太棒啦！展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
-                "growth": f"在【{session['scenario']['title']}】这个小插曲中，你们学会了‘停下来想一想’，并勇敢说出了感受！",
-                "tip": "下次再遇到让你生气的事情，记得先深呼吸数到三，用‘我希望/我需要...’来表达，好朋友会更懂你哦！"
-            }
+        scenario_title = session["scenario"]["title"] if session.get("scenario") else "刚才的小插曲"
+        
+        session["freeze"]["finalReport"] = {
+            "praise": "你们都太棒啦！在遇到矛盾时没有一直发脾气，而是愿意停下来听对方说话，这就是超级厉害的【共情能力】！",
+            "growth": f"在解决【{scenario_title}】的误会时，你们勇敢地说出了自己的感受。你们学会了用沟通代替争吵，这就是最大的成长！",
+            "tip": "法官精灵的交友秘籍：下次再遇到让你着急的事情，记得在心里数三秒，然后用‘我希望/我需要...’来表达，好朋友会更懂你哦！"
+        }
 
         session["chat"].append({"id": f"sys_{time.time()}_celeb", "kind": "system", "text": "太棒了！因为你们成功合作，调解训练顺利结束，拿到🌸 小红花！", "meta": "celebrate"})
         session["chat"].append({"id": f"sys_{time.time()}_feel_A", "kind": "system", "text": "场控Agent：回想一下最开始生气的时刻，再看看现在，心里感觉怎么样？", "meta": "finished", "target": "A"})
         session["chat"].append({"id": f"sys_{time.time()}_enc_A", "kind": "system", "text": "引导Agent：你今天做得很棒！学会了沟通解开误会！", "meta": "finished", "target": "A"})
         session["chat"].append({"id": f"sys_{time.time()}_enc_B", "kind": "system", "text": "引导Agent：你是个善解人意的好搭档！没有陷入争吵，做得很棒！", "meta": "finished", "target": "B"})
-    else:
-        session["chat"].append({"id": f"sys_{time.time()}_wait_agree", "kind": "system", "text": f"身份 {role} 已点击达成一致，等待确认...", "meta": "waiting"})
 
     save_session(session)
     return jsonify(session)
