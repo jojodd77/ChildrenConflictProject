@@ -20,16 +20,15 @@ app = Flask(__name__)
 UPSTASH_URL = "https://thankful-basilisk-40393.upstash.io".rstrip('/')
 UPSTASH_TOKEN = "AZ3JAAIncDFkZTI3YTc0N2VlZmM0ZGM2OTY2ZDYxNmRiNDUyNjAxNXAxNDAzOTM"
 
-def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3):
+def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3, timeout=7.0):
     try:
         print(f"\n[{agent_name}] 正在思考中...")
         api_key = "b8a447348756415ca41e21d50dfd7984.HmPlU26ZFtipn5La"
 
-        # 强制7秒超时，保住 Vercel 不崩
         client = OpenAI(
             api_key=api_key,
             base_url="https://open.bigmodel.cn/api/paas/v4/",
-            timeout=7.0 
+            timeout=timeout 
         )
         response = client.chat.completions.create(
             model="glm-4-flash",
@@ -53,16 +52,9 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3)
         print(f"[{agent_name}] 调用失败: {e}")
         return None
 
-# ========================================================
-# 【绝不丢包版】数据库读写系统（强制JSON头 + 标准指令包）
-# ========================================================
 def get_session(code):
-    url = f"{UPSTASH_URL}/"
-    payload = json.dumps(["GET", code]).encode('utf-8')
-    req = urllib.request.Request(url, data=payload, headers={
-        "Authorization": f"Bearer {UPSTASH_TOKEN}",
-        "Content-Type": "application/json"
-    }, method='POST')
+    url = f"{UPSTASH_URL}/get/{code}?_t={int(time.time() * 1000)}"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {UPSTASH_TOKEN}"})
     try:
         with urllib.request.urlopen(req, timeout=5.0) as response:
             res_data = json.loads(response.read().decode('utf-8'))
@@ -83,17 +75,17 @@ def get_session(code):
             "triggerText": None,
             "aMotivation": None,
             "bGuess": None,
-            "result": None
+            "result": None,
+            "finalReport": None # 新增：存放最终的 AI 成长报告
         },
         "agreed": {"A": False, "B": False}
     }
 
 def save_session(session):
     code = session["code"]
-    url = f"{UPSTASH_URL}/"
+    url = f"{UPSTASH_URL}/set/{code}"
     val_str = json.dumps(session, ensure_ascii=False)
-    payload = json.dumps(["SET", code, val_str]).encode('utf-8')
-    req = urllib.request.Request(url, data=payload, headers={
+    req = urllib.request.Request(url, data=val_str.encode('utf-8'), headers={
         "Authorization": f"Bearer {UPSTASH_TOKEN}",
         "Content-Type": "application/json"
     }, method='POST')
@@ -151,9 +143,6 @@ def join():
         scenario_res = call_agent(agent1_prompt, "请生成儿童冲突剧本。", agent_name="场控 Agent", temperature=0.7)
 
         if scenario_res:
-            # ========================================================
-            # 【终极防翻车】：强行清洗大模型格式，把字典对象拆成纯文本
-            # ========================================================
             for key in ["storyA", "storyB", "title", "systemRule", "objective_fact"]:
                 if isinstance(scenario_res.get(key), dict):
                     vals = list(scenario_res[key].values())
@@ -373,6 +362,32 @@ def agree():
 
     if session["agreed"]["A"] and session["agreed"]["B"]:
         session["freeze"]["phase"] = "finished"
+        
+        # ========================================================
+        # 【新增】：AI 生成专属成长报告 (带有快速超时保护)
+        # ========================================================
+        report_prompt = f"""
+        你是一位温柔的儿童心理导师。两位7-11岁的孩子刚刚成功解决了一个冲突（情境：{session['scenario']['title']}）。
+        请为他们生成一份简短的专属【成长报告】。
+        严格返回JSON格式：
+        {{
+            "praise": "表扬他们的共情能力、倾听能力...",
+            "growth": "总结本次调解中他们学到了什么（具体结合情境）...",
+            "tip": "给出以后遇到类似情况的交友小建议..."
+        }}
+        """
+        report_res = call_agent(report_prompt, "请生成表扬报告", agent_name="成长 Agent", temperature=0.5, timeout=5.0)
+
+        if report_res and "praise" in report_res:
+            session["freeze"]["finalReport"] = report_res
+        else:
+            # 备用静态报告，防止超时
+            session["freeze"]["finalReport"] = {
+                "praise": "你们都太棒啦！在刚才的对话中，你们展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
+                "growth": f"在【{session['scenario']['title']}】这个小插曲中，你们学会了‘停下来想一想’，并勇敢说出了感受，这就是最大的成长！",
+                "tip": "下次再遇到让你生气的事情，记得先深呼吸数到三，用‘我希望/我需要...’来表达，好朋友会更懂你哦！"
+            }
+
         session["chat"].append({"id": f"sys_{time.time()}_celeb", "kind": "system", "text": "太棒了！因为你们成功合作，调解训练顺利结束，拿到🌸 小红花！", "meta": "celebrate"})
         session["chat"].append({"id": f"sys_{time.time()}_feel_A", "kind": "system", "text": "场控Agent：回想一下最开始生气的时刻，再看看现在，心里感觉怎么样？", "meta": "finished", "target": "A"})
         session["chat"].append({"id": f"sys_{time.time()}_enc_A", "kind": "system", "text": "引导Agent：你今天做得很棒！学会了沟通解开误会！", "meta": "finished", "target": "A"})
