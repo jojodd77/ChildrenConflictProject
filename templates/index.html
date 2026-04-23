@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>儿童社交冲突解决平台</title>
+    <title>儿童社交冲突调节平台</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=58" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=60" />
 
     <style>
       /* ==========================================
@@ -19,6 +19,13 @@
       .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; }
       .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
       .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; box-shadow: 8px 8px 0px #FDE047; }
+
+      /* ==========================================
+         【新增：顶部 Logo 与标题样式】
+         ========================================== */
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .brand__logo { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 3px solid #1E293B; box-shadow: 0 3px 0 #1E293B; background: white; }
+      .brand__title { font-size: 20px; font-weight: 900; color: #1E293B; }
 
       /* ==========================================
          【2. 全屏加载与和好动画】
@@ -37,7 +44,7 @@
       .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
 
       /* ==========================================
-         【3. 巨无霸麦克风与输入区（彻底解决低龄交互）】
+         【3. 巨无霸麦克风与输入区】
          ========================================== */
       .btn--speak { padding: 8px; border-radius: 50%; background: var(--secondary); border: none; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
       .btn--speak:hover { background: #DBEAFE; transform: scale(1.1); }
@@ -47,8 +54,8 @@
           height: 64px !important; 
           font-size: 30px !important; 
           border-radius: 50% !important; 
-          background: #FDE047 !important; /* 明黄色，吸引儿童注意 */
-          border: 3px solid #1E293B !important; /* 粗黑边，符合整体UI */
+          background: #FDE047 !important; 
+          border: 3px solid #1E293B !important; 
           box-shadow: 0 4px 0 #1E293B !important; 
           cursor: pointer; 
           display: inline-flex; 
@@ -64,7 +71,7 @@
           box-shadow: 0 2px 0 #1E293B !important;
       }
       .btn--mic.recording {
-          background: #EF4444 !important; /* 录音时变成红色 */
+          background: #EF4444 !important; 
           color: white !important;
           animation: superPulse 1s infinite !important;
           box-shadow: none !important;
@@ -72,13 +79,11 @@
       }
       @keyframes superPulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
-      /* 配合巨无霸麦克风，加宽加高聊天输入栏 */
       .composer__row { display: flex; gap: 12px; align-items: center; width: 100%; margin-top: 5px; }
       .composer__row .input { flex: 1; height: 64px !important; border-radius: 32px !important; font-size: 16px; padding: 0 24px; border: 3px solid #1E293B !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
       .composer__row .btn--primary { flex-shrink: 0; height: 64px !important; border-radius: 32px !important; font-size: 18px !important; font-weight: 900 !important; padding: 0 32px !important; border: 3px solid #1E293B !important; box-shadow: 0 4px 0 #1E293B !important; transition: all 0.1s; }
       .composer__row .btn--primary:active { transform: translateY(4px); box-shadow: 0 0 0 #1E293B !important; }
 
-      /* 语音朗读按钮 */
       .btn-sound { background: rgba(255,255,255,0.5); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
       .btn-sound:hover { background: rgba(255,255,255,0.9); transform: scale(1.1); }
       .btn-sound.playing { background: #FDE047; animation: soundPulse 1.5s infinite; }
@@ -98,7 +103,7 @@
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
       /* ==========================================
-         【4. UI 组件（保留你的黑色粗边框风格）】
+         【4. UI 组件】
          ========================================== */
       .report-card-super { background: #BFDBFE; border: 4px solid #2B3245; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 8px 0 #2B3245; }
       .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
@@ -121,7 +126,6 @@
       .msg--right .msg-content-wrap { align-items: flex-end; }
       .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; }
 
-      /* 降温遮罩与弹窗麦克风 */
       #waitRephraseOverlay { background: rgba(255, 255, 255, 0.95); z-index: 9900; }
       .pause-box { text-align: center; max-width: 500px; padding: 40px; background: #EFF6FF; border-radius: 20px; border: 4px solid #1E293B; box-shadow: 8px 8px 0 #FDE047; }
       .pause-box h2 { color: #1E3A8A; font-size: 24px; font-weight: 900; margin-bottom: 10px; }
@@ -160,10 +164,9 @@
     <div class="app">
       <header class="topbar">
         <div class="brand">
-          <div class="brand__mark" aria-hidden="true">法</div>
+          <img class="brand__logo" src="/static/img/logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/48?text=图'" />
           <div class="brand__text">
-            <div class="brand__title">儿童社交魔法屋</div>
-            <div class="brand__sub">用魔法打败误会 · 语音输入 · 心心相印</div>
+            <div class="brand__title">儿童社交冲突调节平台</div>
           </div>
         </div>
         <div class="topbar__right">
@@ -243,15 +246,13 @@
 
                 <div class="composer">
                   <div id="negotiateActions" style="display: none; padding-bottom: 12px; text-align: center;">
-                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: var(--good); border-color: var(--good); color: #064E3B; width: 100%;">🤝 我们商量好了 (点击拉钩)</button>
+                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: #A7F3D0; border: 3px solid #1E293B; color: #064E3B; width: 100%; box-shadow: 0 4px 0 #1E293B; font-weight: 900; transition: all 0.2s;">🤝 我们商量好了 (点击拉钩)</button>
                   </div>
-                  
                   <div class="composer__row">
                     <button class="btn btn--mic" id="btnMicChat" title="点击麦克风直接说话">🎤</button>
                     <input class="input input--big" id="composerInput" placeholder="点左边麦克风说话，或在这打字…" autocomplete="off" />
                     <button class="btn btn--primary" id="btnSend" type="button">发送</button>
                   </div>
-                  
                   <div class="composer__sub" id="composerSub"></div>
                 </div>
               </div>
@@ -389,7 +390,6 @@
             if(btnElement) { if (!btnElement.dataset.origText) btnElement.dataset.origText = btnElement.innerHTML; btnElement.innerHTML = '⏸️'; btnElement.classList.add('playing'); window.currentSpeakingBtn = btnElement; }
         };
 
-        // 点击式语音识别 (自动停止防崩)
         const setupSpeechRecognition = (btnId, inputId, isModal = false) => {
             const btn = $(btnId); const input = $(inputId);
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { btn.style.display = 'none'; return; }
@@ -610,7 +610,7 @@
             syncInterval = setInterval(async () => {
                 if (!appState.code) return;
                 try { const res = await fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({code: appState.code}) }); const data = await res.json(); if (JSON.stringify(data) !== JSON.stringify(currentSessionData)) { currentSessionData = data; renderSession(data); } } catch(e) {}
-            }, 1000);
+            }, 2500); 
         }
 
         async function join(role) {
@@ -627,7 +627,17 @@
         composerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (!btnSend.disabled) btnSend.click(); } });
         modalSubmit.onclick = async () => { const text = modalText.value.trim(); if (!text) return alert("要说点什么才能提交哦！"); modal.setAttribute("aria-hidden", "true"); modalText.value = ""; $("typingIndicator").classList.add("active"); await fetch('/api/submit_freeze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text, mode: modal.dataset.mode }) }); };
         modalClose.onclick = modalCancel.onclick = () => { modal.setAttribute("aria-hidden", "true"); modalText.value=""; }
-        btnAgree.onclick = async () => { btnAgree.disabled = true; await fetch('/api/agree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role }) }); };
+        
+        btnAgree.onclick = async () => { 
+            btnAgree.disabled = true; 
+            btnAgree.style.background = "#E2E8F0"; 
+            btnAgree.style.color = "#475569";
+            btnAgree.style.boxShadow = "none";
+            btnAgree.style.transform = "translateY(4px)";
+            btnAgree.textContent = "⏳ 法官精灵正在写报告，请稍等几秒..."; 
+            await fetch('/api/agree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role }) }); 
+        };
+
         btnReviewChat.onclick = () => finishModal.setAttribute("aria-hidden", "true");
         btnReturnHome.onclick = btnReset.onclick = () => location.reload();
         sessionCodeInput.value = randomCode();
