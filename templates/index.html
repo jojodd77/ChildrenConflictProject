@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=60" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=62" />
 
     <style>
       /* ==========================================
@@ -21,10 +21,10 @@
       .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; box-shadow: 8px 8px 0px #FDE047; }
 
       /* ==========================================
-         【新增：顶部 Logo 与标题样式】
+         【新增：顶部彩色小人 Logo 与标题样式】
          ========================================== */
       .brand { display: flex; align-items: center; gap: 12px; }
-      .brand__logo { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 3px solid #1E293B; box-shadow: 0 3px 0 #1E293B; background: white; }
+      .brand__logo { width: 48px; height: 48px; object-fit: contain; } /* 移除了黑框，让你的透明底色小人完美融入 */
       .brand__title { font-size: 20px; font-weight: 900; color: #1E293B; }
 
       /* ==========================================
@@ -66,17 +66,8 @@
           color: #1E293B !important;
           padding: 0 !important;
       }
-      .btn--mic:hover {
-          transform: translateY(2px) !important;
-          box-shadow: 0 2px 0 #1E293B !important;
-      }
-      .btn--mic.recording {
-          background: #EF4444 !important; 
-          color: white !important;
-          animation: superPulse 1s infinite !important;
-          box-shadow: none !important;
-          border-color: transparent !important;
-      }
+      .btn--mic:hover { transform: translateY(2px) !important; box-shadow: 0 2px 0 #1E293B !important; }
+      .btn--mic.recording { background: #EF4444 !important; color: white !important; animation: superPulse 1s infinite !important; box-shadow: none !important; border-color: transparent !important; }
       @keyframes superPulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
       .composer__row { display: flex; gap: 12px; align-items: center; width: 100%; margin-top: 5px; }
@@ -108,8 +99,6 @@
       .report-card-super { background: #BFDBFE; border: 4px solid #2B3245; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 8px 0 #2B3245; }
       .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
       .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 600; }
-      .super-badges { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
-      .super-badge-item { background: white; padding: 8px 20px; border-radius: 30px; font-weight: 900; color: #2563EB; border: 2px solid #93C5FD; box-shadow: 0 4px 0 #93C5FD; }
       .super-tip-box { background: #EFF6FF; padding: 15px; border-radius: 12px; margin: 20px 0; font-size: 14px; text-align: left; color: #1E3A8A; border: 2px dashed #60A5FA; line-height: 1.6; }
       .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
       .super-btn { border-radius: 30px; padding: 12px 24px; font-weight: 900; font-size: 16px; border: 3px solid #2B3245; box-shadow: 0 4px 0 #2B3245; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
