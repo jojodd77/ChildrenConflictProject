@@ -8,17 +8,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=66" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=68" />
 
     <style>
+      /* ==========================================
+         【全局：终极去阴影魔法】
+         清除所有元素的夸张黑阴影，只保留描边
+         ========================================== */
+      .btn, .card, .chip, .modal__panel, .pause-box, .report-card-super, .hero__image, .avatar, .btn--mic, .btn--read, .btn--primary, .btn--ghost, .btn--secondary, .btn-sound, .super-btn, .super-tip-box, .heart-match-container, .quote-box, .input, .textarea {
+          box-shadow: none !important;
+      }
+
       /* ==========================================
          【1. 首页排版修复】
          ========================================== */
       #screenHome.screen--active { display: flex; flex-direction: column; justify-content: center; }
-      .btn { white-space: nowrap !important; }
+      .btn { white-space: nowrap !important; transition: all 0.15s ease !important; }
+      .btn:active { transform: scale(0.96) !important; } /* 扁平化点击缩放效果 */
+      
       .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; }
       .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
-      .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; box-shadow: 8px 8px 0px #FDE047; }
+      .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; }
 
       .brand { display: flex; align-items: center; gap: 12px; }
       .brand__logo { width: 48px; height: 48px; object-fit: contain; } 
@@ -44,32 +54,30 @@
          【3. 对话框核心交互控件】
          ========================================== */
       .btn--read {
-          background-color: #93C5FD; color: #1E293B; border: 2px solid #1E293B; border-radius: 12px; padding: 6px 14px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #1E293B; transition: all 0.1s ease; display: inline-flex; align-items: center; gap: 6px;
+          background-color: #93C5FD; color: #1E293B; border: 2px solid #1E293B; border-radius: 12px; padding: 6px 14px; font-size: 14px; font-weight: 900; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 6px;
       }
-      .btn--read:hover { transform: translateY(2px); box-shadow: 0 2px 0 #1E293B; background-color: #BFDBFE; }
-      .btn--read:active { transform: translateY(4px); box-shadow: 0 0 0 #1E293B; }
+      .btn--read:hover { background-color: #BFDBFE; transform: scale(0.98); }
+      .btn--read:active { transform: scale(0.94); }
       .btn--read.playing { background-color: #FDE047; animation: none; }
 
       .btn--mic { 
-          width: 64px !important; height: 64px !important; font-size: 30px !important; border-radius: 50% !important; background: #FDE047 !important; border: 3px solid #1E293B !important; box-shadow: 0 4px 0 #1E293B !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.1s !important; flex-shrink: 0; color: #1E293B !important; padding: 0 !important;
+          width: 64px !important; height: 64px !important; font-size: 30px !important; border-radius: 50% !important; background: #FDE047 !important; border: 3px solid #1E293B !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s !important; flex-shrink: 0; color: #1E293B !important; padding: 0 !important;
       }
-      .btn--mic:hover { transform: translateY(2px) !important; box-shadow: 0 2px 0 #1E293B !important; }
-      .btn--mic.recording { background: #EF4444 !important; color: white !important; animation: superPulse 1s infinite !important; box-shadow: none !important; border-color: transparent !important; }
-      @keyframes superPulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+      .btn--mic:hover { transform: scale(0.96) !important; background: #FEF08A !important; }
+      .btn--mic:active { transform: scale(0.92) !important; }
+      .btn--mic.recording { background: #EF4444 !important; color: white !important; border-color: transparent !important; }
 
       .composer__row { display: flex; gap: 12px; align-items: center; width: 100%; margin-top: 5px; }
-      .composer__row .input { flex: 1; height: 64px !important; border-radius: 32px !important; font-size: 16px; padding: 0 24px; border: 3px solid #1E293B !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
-      .composer__row .btn--primary { flex-shrink: 0; height: 64px !important; border-radius: 32px !important; font-size: 18px !important; font-weight: 900 !important; padding: 0 32px !important; border: 3px solid #1E293B !important; box-shadow: 0 4px 0 #1E293B !important; transition: all 0.1s; }
-      .composer__row .btn--primary:active { transform: translateY(4px); box-shadow: 0 0 0 #1E293B !important; }
+      .composer__row .input { flex: 1; height: 64px !important; border-radius: 32px !important; font-size: 16px; padding: 0 24px; border: 3px solid #1E293B !important; }
+      .composer__row .btn--primary { flex-shrink: 0; height: 64px !important; border-radius: 32px !important; font-size: 18px !important; font-weight: 900 !important; padding: 0 32px !important; border: 3px solid #1E293B !important; transition: all 0.15s; }
 
-      .btn-sound { background: rgba(255,255,255,0.5); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-      .btn-sound:hover { background: rgba(255,255,255,0.9); transform: scale(1.1); }
-      .btn-sound.playing { background: #FDE047; animation: soundPulse 1.5s infinite; }
-      @keyframes soundPulse { 0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.6); } 70% { box-shadow: 0 0 0 8px rgba(253, 224, 71, 0); } 100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); } }
+      .btn-sound { background: rgba(255,255,255,0.5); border: 2px solid #1E293B; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+      .btn-sound:hover { background: rgba(255,255,255,0.9); transform: scale(0.95); }
+      .btn-sound.playing { background: #FDE047; }
 
-      .heart-match-container { border-width: 3px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+      .heart-match-container { border-width: 3px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; transition: all 0.3s ease; }
       .heart-track { height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
-      .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); text-shadow: 0 4px 6px rgba(0,0,0,0.15); z-index: 5; }
+      .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; }
       .heart-left { left: 0%; }
       .heart-right { right: 0%; }
       .match-text { font-size: 24px; font-weight: 900; margin-top: 10px; }
@@ -90,22 +98,21 @@
       .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; }
 
       /* ==========================================
-         【4. 统一弹窗设计规范 (Unified Modal Design System)】
-         核心规范：4px粗黑边框、24px大圆角、8px粗黑实底阴影
+         【4. 统一弹窗设计规范 (无阴影扁平版)】
+         核心规范：4px粗黑边框、24px大圆角、纯平无阴影
          ========================================== */
 
       /* A. 动机采集弹窗 */
       #modal .modal__panel {
           border: 4px solid #1E293B !important;
           border-radius: 24px !important;
-          box-shadow: 8px 8px 0 #1E293B !important;
           padding: 0 !important;
           background: #F8FAFC !important;
           overflow: hidden;
           max-width: 500px !important;
       }
       #modal .modal__header {
-          background: #6EE7B7 !important; /* 清新薄荷绿 */
+          background: #6EE7B7 !important; 
           border-bottom: 4px solid #1E293B !important;
           padding: 16px 24px !important;
           display: flex; justify-content: space-between; align-items: center;
@@ -124,23 +131,23 @@
       #modalClose {
           background: #FDA4AF !important; border: 3px solid #1E293B !important; border-radius: 50% !important;
           width: 32px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important;
-          color: #1E293B !important; font-weight: 900 !important; box-shadow: 2px 2px 0 #1E293B !important; opacity: 1 !important;
-          transition: all 0.1s; cursor: pointer;
+          color: #1E293B !important; font-weight: 900 !important; opacity: 1 !important;
+          transition: all 0.15s; cursor: pointer;
       }
-      #modalClose:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #1E293B !important; }
+      #modalClose:active { transform: scale(0.9); }
       #modalCancel {
-          background: #FDE047 !important; border: 3px solid #1E293B !important; box-shadow: 4px 4px 0 #1E293B !important;
-          border-radius: 20px !important; color: #1E293B !important; font-weight: 900 !important; padding: 10px 24px !important; transition: all 0.1s;
+          background: #FDE047 !important; border: 3px solid #1E293B !important;
+          border-radius: 20px !important; color: #1E293B !important; font-weight: 900 !important; padding: 10px 24px !important; transition: all 0.15s;
       }
       #modalSubmit {
-          background: #6EE7B7 !important; border: 3px solid #1E293B !important; box-shadow: 4px 4px 0 #1E293B !important;
-          border-radius: 20px !important; color: #064E3B !important; font-weight: 900 !important; padding: 10px 24px !important; transition: all 0.1s;
+          background: #6EE7B7 !important; border: 3px solid #1E293B !important;
+          border-radius: 20px !important; color: #064E3B !important; font-weight: 900 !important; padding: 10px 24px !important; transition: all 0.15s;
       }
-      #modalCancel:active, #modalSubmit:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #1E293B !important; }
+      #modalCancel:active, #modalSubmit:active { transform: scale(0.96) !important; }
 
       .quote-box {
           background: #FEE2E2; border: 3px solid #1E293B; border-radius: 12px; padding: 12px; margin: 12px 0;
-          color: #991B1B; font-weight: 700; font-size: 15px; text-align: left; box-shadow: 4px 4px 0 rgba(30, 41, 59, 0.1);
+          color: #991B1B; font-weight: 700; font-size: 15px; text-align: left;
       }
       .modal-mic-container {
           border: 3px dashed #94A3B8 !important; border-radius: 16px !important; background: white !important;
@@ -151,7 +158,7 @@
       #waitRephraseOverlay { background: rgba(255, 255, 255, 0.95); z-index: 9900; }
       .pause-box {
           background: #EFF6FF !important; border: 4px solid #1E293B !important; border-radius: 24px !important;
-          box-shadow: 8px 8px 0 #1E293B !important; padding: 40px !important; text-align: center; max-width: 500px;
+          padding: 40px !important; text-align: center; max-width: 500px;
       }
       .pause-box h2 { color: #1E3A8A; font-size: 24px; font-weight: 900; margin-bottom: 10px; }
       .pause-box p { font-size: 16px; color: #1E293B; line-height: 1.6; margin-bottom: 20px; font-weight: 600; }
@@ -159,22 +166,22 @@
       /* C. 成长报告弹窗 */
       .report-card-super {
           background: #BFDBFE !important; border: 4px solid #1E293B !important; border-radius: 24px !important;
-          box-shadow: 8px 8px 0 #1E293B !important; padding: 30px !important; text-align: center; max-width: 600px;
+          padding: 30px !important; text-align: center; max-width: 600px;
       }
       .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
       .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 900; }
       
       .super-tip-box {
           background: white !important; border: 3px solid #1E293B !important; border-radius: 16px !important;
-          box-shadow: 4px 4px 0 rgba(30, 41, 59, 0.1) !important; padding: 15px !important; margin: 15px 0 !important;
+          padding: 15px !important; margin: 15px 0 !important;
           font-size: 14px; text-align: left; line-height: 1.6;
       }
       .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
       .super-btn {
           border-radius: 20px; padding: 12px 24px; font-weight: 900; font-size: 16px; border: 3px solid #1E293B;
-          box-shadow: 4px 4px 0 #1E293B; cursor: pointer; transition: all 0.1s;
+          cursor: pointer; transition: all 0.15s;
       }
-      .super-btn:active { transform: translate(4px,4px); box-shadow: 0 0 0 #1E293B; }
+      .super-btn:active { transform: scale(0.96); }
       .super-btn-ghost { background: white; color: #1E293B; }
       .super-btn-primary { background: #818CF8; color: #1E293B; }
     </style>
@@ -288,7 +295,7 @@
 
                 <div class="composer">
                   <div id="negotiateActions" style="display: none; padding-bottom: 12px; text-align: center;">
-                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: #A7F3D0; border: 3px solid #1E293B; color: #064E3B; width: 100%; box-shadow: 0 4px 0 #1E293B; font-weight: 900; transition: all 0.2s;">🤝 我们商量好了 (点击拉钩)</button>
+                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: #A7F3D0; border: 3px solid #1E293B; color: #064E3B; width: 100%; font-weight: 900; transition: all 0.15s;">🤝 我们商量好了 (点击拉钩)</button>
                   </div>
                   <div class="composer__row">
                     <button class="btn btn--mic" id="btnMicChat" title="点击麦克风直接说话">🎤</button>
@@ -336,7 +343,7 @@
 
     <div class="modal" id="finishModal" aria-hidden="true" role="dialog" aria-modal="true" style="z-index: 10000;">
       <div class="modal__backdrop"></div>
-      <div class="modal__panel" role="document" style="background: transparent; box-shadow: none; border: none;">
+      <div class="modal__panel" role="document" style="background: transparent; border: none;">
         <div class="report-card-super">
           <h2>🏆 调解大成功！</h2>
           <p>这是法官精灵为你们颁发的专属《成长报告》</p>
@@ -707,8 +714,7 @@
             btnAgree.disabled = true; 
             btnAgree.style.background = "#E2E8F0"; 
             btnAgree.style.color = "#475569";
-            btnAgree.style.boxShadow = "none";
-            btnAgree.style.transform = "translateY(4px)";
+            btnAgree.style.transform = "scale(0.98)";
             btnAgree.textContent = "⏳ 法官精灵正在写报告，请稍等几秒..."; 
             await fetch('/api/agree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role }) }); 
         };
