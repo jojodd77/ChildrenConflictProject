@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=62" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=66" />
 
     <style>
       /* ==========================================
@@ -20,11 +20,8 @@
       .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
       .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; box-shadow: 8px 8px 0px #FDE047; }
 
-      /* ==========================================
-         【新增：顶部彩色小人 Logo 与标题样式】
-         ========================================== */
       .brand { display: flex; align-items: center; gap: 12px; }
-      .brand__logo { width: 48px; height: 48px; object-fit: contain; } /* 移除了黑框，让你的透明底色小人完美融入 */
+      .brand__logo { width: 48px; height: 48px; object-fit: contain; } 
       .brand__title { font-size: 20px; font-weight: 900; color: #1E293B; }
 
       /* ==========================================
@@ -44,27 +41,17 @@
       .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
 
       /* ==========================================
-         【3. 巨无霸麦克风与输入区】
+         【3. 对话框核心交互控件】
          ========================================== */
-      .btn--speak { padding: 8px; border-radius: 50%; background: var(--secondary); border: none; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-      .btn--speak:hover { background: #DBEAFE; transform: scale(1.1); }
-      
+      .btn--read {
+          background-color: #93C5FD; color: #1E293B; border: 2px solid #1E293B; border-radius: 12px; padding: 6px 14px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #1E293B; transition: all 0.1s ease; display: inline-flex; align-items: center; gap: 6px;
+      }
+      .btn--read:hover { transform: translateY(2px); box-shadow: 0 2px 0 #1E293B; background-color: #BFDBFE; }
+      .btn--read:active { transform: translateY(4px); box-shadow: 0 0 0 #1E293B; }
+      .btn--read.playing { background-color: #FDE047; animation: none; }
+
       .btn--mic { 
-          width: 64px !important; 
-          height: 64px !important; 
-          font-size: 30px !important; 
-          border-radius: 50% !important; 
-          background: #FDE047 !important; 
-          border: 3px solid #1E293B !important; 
-          box-shadow: 0 4px 0 #1E293B !important; 
-          cursor: pointer; 
-          display: inline-flex; 
-          align-items: center; 
-          justify-content: center; 
-          transition: all 0.1s !important;
-          flex-shrink: 0;
-          color: #1E293B !important;
-          padding: 0 !important;
+          width: 64px !important; height: 64px !important; font-size: 30px !important; border-radius: 50% !important; background: #FDE047 !important; border: 3px solid #1E293B !important; box-shadow: 0 4px 0 #1E293B !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.1s !important; flex-shrink: 0; color: #1E293B !important; padding: 0 !important;
       }
       .btn--mic:hover { transform: translateY(2px) !important; box-shadow: 0 2px 0 #1E293B !important; }
       .btn--mic.recording { background: #EF4444 !important; color: white !important; animation: superPulse 1s infinite !important; box-shadow: none !important; border-color: transparent !important; }
@@ -93,19 +80,6 @@
       .dots span { display: inline-block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
-      /* ==========================================
-         【4. UI 组件】
-         ========================================== */
-      .report-card-super { background: #BFDBFE; border: 4px solid #2B3245; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 8px 0 #2B3245; }
-      .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
-      .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 600; }
-      .super-tip-box { background: #EFF6FF; padding: 15px; border-radius: 12px; margin: 20px 0; font-size: 14px; text-align: left; color: #1E3A8A; border: 2px dashed #60A5FA; line-height: 1.6; }
-      .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
-      .super-btn { border-radius: 30px; padding: 12px 24px; font-weight: 900; font-size: 16px; border: 3px solid #2B3245; box-shadow: 0 4px 0 #2B3245; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
-      .super-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #2B3245; }
-      .super-btn-ghost { background: white; color: #2563EB; }
-      .super-btn-primary { background: #2563EB; color: white; }
-
       .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: flex-start !important; }
       .msg--right { flex-direction: row-reverse !important; }
       .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; font-weight: 900 !important; border: 2px solid #064E3B !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0; }
@@ -115,15 +89,94 @@
       .msg--right .msg-content-wrap { align-items: flex-end; }
       .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; }
 
+      /* ==========================================
+         【4. 统一弹窗设计规范 (Unified Modal Design System)】
+         核心规范：4px粗黑边框、24px大圆角、8px粗黑实底阴影
+         ========================================== */
+
+      /* A. 动机采集弹窗 */
+      #modal .modal__panel {
+          border: 4px solid #1E293B !important;
+          border-radius: 24px !important;
+          box-shadow: 8px 8px 0 #1E293B !important;
+          padding: 0 !important;
+          background: #F8FAFC !important;
+          overflow: hidden;
+          max-width: 500px !important;
+      }
+      #modal .modal__header {
+          background: #6EE7B7 !important; /* 清新薄荷绿 */
+          border-bottom: 4px solid #1E293B !important;
+          padding: 16px 24px !important;
+          display: flex; justify-content: space-between; align-items: center;
+      }
+      #modal .modal__title {
+          color: #1E293B !important;
+          font-weight: 900 !important;
+          font-size: 20px !important;
+      }
+      #modal .modal__body { padding: 24px !important; }
+      #modal .modal__footer {
+          padding: 0 24px 24px !important;
+          border-top: none !important;
+          display: flex; gap: 12px; justify-content: flex-end;
+      }
+      #modalClose {
+          background: #FDA4AF !important; border: 3px solid #1E293B !important; border-radius: 50% !important;
+          width: 32px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important;
+          color: #1E293B !important; font-weight: 900 !important; box-shadow: 2px 2px 0 #1E293B !important; opacity: 1 !important;
+          transition: all 0.1s; cursor: pointer;
+      }
+      #modalClose:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #1E293B !important; }
+      #modalCancel {
+          background: #FDE047 !important; border: 3px solid #1E293B !important; box-shadow: 4px 4px 0 #1E293B !important;
+          border-radius: 20px !important; color: #1E293B !important; font-weight: 900 !important; padding: 10px 24px !important; transition: all 0.1s;
+      }
+      #modalSubmit {
+          background: #6EE7B7 !important; border: 3px solid #1E293B !important; box-shadow: 4px 4px 0 #1E293B !important;
+          border-radius: 20px !important; color: #064E3B !important; font-weight: 900 !important; padding: 10px 24px !important; transition: all 0.1s;
+      }
+      #modalCancel:active, #modalSubmit:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #1E293B !important; }
+
+      .quote-box {
+          background: #FEE2E2; border: 3px solid #1E293B; border-radius: 12px; padding: 12px; margin: 12px 0;
+          color: #991B1B; font-weight: 700; font-size: 15px; text-align: left; box-shadow: 4px 4px 0 rgba(30, 41, 59, 0.1);
+      }
+      .modal-mic-container {
+          border: 3px dashed #94A3B8 !important; border-radius: 16px !important; background: white !important;
+          padding: 20px 0; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center;
+      }
+
+      /* B. 接收方降温遮罩 */
       #waitRephraseOverlay { background: rgba(255, 255, 255, 0.95); z-index: 9900; }
-      .pause-box { text-align: center; max-width: 500px; padding: 40px; background: #EFF6FF; border-radius: 20px; border: 4px solid #1E293B; box-shadow: 8px 8px 0 #FDE047; }
+      .pause-box {
+          background: #EFF6FF !important; border: 4px solid #1E293B !important; border-radius: 24px !important;
+          box-shadow: 8px 8px 0 #1E293B !important; padding: 40px !important; text-align: center; max-width: 500px;
+      }
       .pause-box h2 { color: #1E3A8A; font-size: 24px; font-weight: 900; margin-bottom: 10px; }
       .pause-box p { font-size: 16px; color: #1E293B; line-height: 1.6; margin-bottom: 20px; font-weight: 600; }
 
-      .modal-mic-container { display: flex; flex-direction: column; align-items: center; padding: 20px 0; border: 2px dashed #94A3B8; border-radius: 16px; background: #F8FAFC; margin-bottom: 16px; }
-      #btnMicModal { width: 80px !important; height: 80px !important; font-size: 36px !important; }
-      .mic-text-hint { font-size: 16px; font-weight: 900; color: #1E293B; margin-top: 15px; }
-
+      /* C. 成长报告弹窗 */
+      .report-card-super {
+          background: #BFDBFE !important; border: 4px solid #1E293B !important; border-radius: 24px !important;
+          box-shadow: 8px 8px 0 #1E293B !important; padding: 30px !important; text-align: center; max-width: 600px;
+      }
+      .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+      .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 900; }
+      
+      .super-tip-box {
+          background: white !important; border: 3px solid #1E293B !important; border-radius: 16px !important;
+          box-shadow: 4px 4px 0 rgba(30, 41, 59, 0.1) !important; padding: 15px !important; margin: 15px 0 !important;
+          font-size: 14px; text-align: left; line-height: 1.6;
+      }
+      .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+      .super-btn {
+          border-radius: 20px; padding: 12px 24px; font-weight: 900; font-size: 16px; border: 3px solid #1E293B;
+          box-shadow: 4px 4px 0 #1E293B; cursor: pointer; transition: all 0.1s;
+      }
+      .super-btn:active { transform: translate(4px,4px); box-shadow: 0 0 0 #1E293B; }
+      .super-btn-ghost { background: white; color: #1E293B; }
+      .super-btn-primary { background: #818CF8; color: #1E293B; }
     </style>
   </head>
   <body>
@@ -201,7 +254,7 @@
               <div class="card card--tight contextCard">
                 <div class="card__title" style="display:flex; justify-content:space-between; align-items:center;">
                    <span>📖 本次情境</span>
-                   <button class="btn btn--speak" style="font-size: 12px; padding: 4px 8px; border-radius: 8px;" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停">🔊 读给我听</button>
+                   <button class="btn--read" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停">🔊 读给我听</button>
                 </div>
                 <div class="story" id="storyText"></div>
                 <div class="divider"></div>
@@ -283,22 +336,22 @@
 
     <div class="modal" id="finishModal" aria-hidden="true" role="dialog" aria-modal="true" style="z-index: 10000;">
       <div class="modal__backdrop"></div>
-      <div class="modal__panel" role="document" style="background: transparent; box-shadow: none;">
+      <div class="modal__panel" role="document" style="background: transparent; box-shadow: none; border: none;">
         <div class="report-card-super">
           <h2>🏆 调解大成功！</h2>
-          <p style="font-weight: 900;">这是法官精灵为你们颁发的专属《成长报告》</p>
+          <p>这是法官精灵为你们颁发的专属《成长报告》</p>
 
-          <div class="super-tip-box" style="background: white;">
+          <div class="super-tip-box">
             <strong style="color: #047857;">💖 闪光点：</strong><br>
             <span id="finalPraise">解析中...</span>
           </div>
 
-          <div class="super-tip-box" style="background: white;">
+          <div class="super-tip-box">
             <strong style="color: #1D4ED8;">🌱 你们的成长：</strong><br>
             <span id="finalGrowth">解析中...</span>
           </div>
 
-          <div class="super-tip-box" style="background: white;">
+          <div class="super-tip-box">
             <strong style="color: #A16207;">💡 精灵小贴士：</strong><br>
             <span id="finalTip">解析中...</span>
           </div>
@@ -371,12 +424,45 @@
         window.currentSpeakingBtn = null;
         window.speakText = (text, btnElement) => {
             if (!('speechSynthesis' in window)) return alert("你的浏览器不支持语音朗读哦~");
-            if (speechSynthesis.speaking && window.currentSpeakingBtn === btnElement) { speechSynthesis.cancel(); if(btnElement) { btnElement.innerHTML = btnElement.dataset.origText || '🔊'; btnElement.classList.remove('playing'); } window.currentSpeakingBtn = null; return; }
-            speechSynthesis.cancel(); if (window.currentSpeakingBtn) { window.currentSpeakingBtn.innerHTML = window.currentSpeakingBtn.dataset.origText || '🔊'; window.currentSpeakingBtn.classList.remove('playing'); }
-            const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'zh-CN'; if (preferredVoice) utterance.voice = preferredVoice; utterance.rate = 0.9; utterance.pitch = 1.1;
-            utterance.onend = utterance.onerror = () => { if(btnElement) { btnElement.innerHTML = btnElement.dataset.origText || '🔊'; btnElement.classList.remove('playing'); } window.currentSpeakingBtn = null; };
+            
+            if (speechSynthesis.speaking && window.currentSpeakingBtn === btnElement) { 
+                speechSynthesis.cancel(); 
+                if(btnElement) { 
+                    btnElement.innerHTML = btnElement.dataset.origText || '🔊 读给我听'; 
+                    btnElement.classList.remove('playing'); 
+                } 
+                window.currentSpeakingBtn = null; 
+                return; 
+            }
+            
+            speechSynthesis.cancel(); 
+            if (window.currentSpeakingBtn) { 
+                window.currentSpeakingBtn.innerHTML = window.currentSpeakingBtn.dataset.origText || '🔊 读给我听'; 
+                window.currentSpeakingBtn.classList.remove('playing'); 
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(text); 
+            utterance.lang = 'zh-CN'; 
+            if (preferredVoice) utterance.voice = preferredVoice; 
+            utterance.rate = 0.9; 
+            utterance.pitch = 1.1;
+            
+            utterance.onend = utterance.onerror = () => { 
+                if(btnElement) { 
+                    btnElement.innerHTML = btnElement.dataset.origText || '🔊 读给我听'; 
+                    btnElement.classList.remove('playing'); 
+                } 
+                window.currentSpeakingBtn = null; 
+            };
+            
             speechSynthesis.speak(utterance);
-            if(btnElement) { if (!btnElement.dataset.origText) btnElement.dataset.origText = btnElement.innerHTML; btnElement.innerHTML = '⏸️'; btnElement.classList.add('playing'); window.currentSpeakingBtn = btnElement; }
+            
+            if(btnElement) { 
+                if (!btnElement.dataset.origText) btnElement.dataset.origText = btnElement.innerHTML; 
+                btnElement.innerHTML = '⏸️ 正在朗读...'; 
+                btnElement.classList.add('playing'); 
+                window.currentSpeakingBtn = btnElement; 
+            }
         };
 
         const setupSpeechRecognition = (btnId, inputId, isModal = false) => {
@@ -532,7 +618,7 @@
               if (modal.getAttribute("aria-hidden") !== "false") {
                   const triggeredByMe = session.freeze.triggeredBy === appState.role;
                   const triggerTxt = session.freeze.triggerText || "刚才说的话";
-                  const blockquoteHtml = `<div style="background: #FEE2E2; border-left: 4px solid #EF4444; padding: 12px; margin: 12px 0; border-radius: 8px; color: #991B1B; font-weight: 700; font-size: 15px; text-align: left;">"${escapeHtml(triggerTxt)}"</div>`;
+                  const blockquoteHtml = `<div class="quote-box">"${escapeHtml(triggerTxt)}"</div>`;
 
                   if (triggeredByMe && !session.freeze.aMotivation) { 
                       modalTitle.textContent = "刚才发火真实的出发点是？"; 
