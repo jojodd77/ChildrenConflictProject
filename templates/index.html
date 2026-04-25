@@ -10,7 +10,7 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=130" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=135" />
 
     <style>
       /* ==========================================
@@ -23,6 +23,13 @@
           -moz-osx-font-smoothing: grayscale !important;
       }
       input::placeholder, textarea::placeholder { color: #94A3B8 !important; font-weight: 600 !important; opacity: 1 !important; }
+
+      /* 进阶：聊天气泡内的大段文本支持换行，且颜色变柔和增加可读性 */
+      .bubble div {
+          white-space: pre-wrap !important;
+          word-break: break-word !important;
+          color: #334155 !important; 
+      }
 
       /* ==========================================
          【1. 全局：Icon 尺寸与对齐优化】
@@ -119,12 +126,12 @@
       .composer__row .input { flex: 1; height: 64px !important; font-size: 16px !important; padding: 0 24px; font-weight: 600; }
       .composer__row .btn--primary { flex-shrink: 0; height: 64px !important; font-size: 18px !important; font-weight: 900 !important; padding: 0 32px !important; }
 
-      .btn-sound { background: rgba(255,255,255,0.8); width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      .btn-sound { background: rgba(255,255,255,0.8); width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
       .btn-sound:hover { background: #FFFFFF; }
       .btn-sound.playing { background: #FDE047; }
 
       /* ==========================================
-         【7. 情境卡片排版优化：去顶线、加宽】
+         【7. 情境卡片排版优化】
          ========================================== */
       .contextCard { padding: 16px 0 !important; background: #FFFFFF !important; }
       .contextCard .card__title { padding: 0 20px 12px 20px !important; border-bottom: none !important; background: transparent !important; }
@@ -138,24 +145,18 @@
           line-height: 1.8 !important; 
           color: #334155 !important; 
           background: transparent !important; 
+          white-space: pre-wrap !important;
       }
       .contextCard .systemNotice { background: #FEF9C3 !important; border: 2px dashed #F59E0B !important; color: #B45309 !important; padding: 12px 16px !important; border-radius: 16px !important; font-weight: 700 !important; font-size: 15px !important; margin: 0 10px !important; box-shadow: none !important; }
 
       /* ==========================================
-         【8. 强迫症修复：思考动画向下沉，贴近输入框】
+         【8. 思考动画丝滑升起】
          ========================================== */
-      .chatCard .chat { 
-          padding: 24px 24px 8px 24px !important; 
-          background: #FFFFFF !important; 
-      }
+      @keyframes slideUp { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+
+      .chatCard .chat { padding: 24px 24px 8px 24px !important; background: #FFFFFF !important; }
       
-      .typing-indicator-wrapper {
-          display: flex; 
-          justify-content: center; 
-          width: 100%; 
-          padding: 0 !important; 
-          background: transparent !important;
-      }
+      .typing-indicator-wrapper { display: flex; justify-content: center; width: 100%; padding: 0 !important; background: transparent !important; }
       .typing-indicator { 
           display: none; 
           padding: 6px 16px 6px 8px !important; 
@@ -167,7 +168,9 @@
           font-size: 14px;
           margin: 24px auto 8px auto !important; 
       }
-      .typing-indicator.active { display: flex; }
+      /* 进阶：让出现更加平滑 */
+      .typing-indicator.active { display: flex; animation: slideUp 0.3s ease-out forwards; }
+      
       .dots { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px;}
       .dots span { display: block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
@@ -221,25 +224,27 @@
       .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; padding: 12px 16px; font-size: 16px; font-weight: 600; line-height: 1.6;}
       
       /* ==========================================
-         【11. 打分卡片终极瘦身：横向拉宽，纵向压缩】
+         【11. 进阶：打分卡片信息层级与聚焦优化】
+         弱化顶部标题，突出中心进度条
          ========================================== */
       .heart-match-container { 
-          padding: 16px 24px; /* 压缩内边距 */
+          padding: 16px 24px; 
           text-align: center; 
           margin: 10px 0; 
           position: relative; 
           display: block; 
           width: 100%; 
-          max-width: 580px; /* 核心：放宽卡片，不再窄窄的 */
+          max-width: 580px; 
           box-sizing: border-box; 
           transition: all 0.3s ease; 
           border: 3px solid #1E293B !important; 
           border-radius: 20px !important;
       }
+      
       .heart-track { 
           position: relative; 
-          height: 40px; /* 压扁轨道区域 */
-          margin: 12px 10px 24px 10px; /* 缩小上下边距 */
+          height: 40px; 
+          margin: 12px 10px 24px 10px; 
       }
       .heart { 
           position: absolute; 
@@ -249,8 +254,9 @@
           align-items: center; 
           justify-content: center;
       }
-      .match-text { font-size: 32px; font-weight: 900; line-height: 1; margin-bottom: 4px; } /* 缩小数字，减少间距 */
-      .match-subtext { font-size: 15px; font-weight: 700; margin-bottom: 16px; } /* 缩小提示语，减少间距 */
+      /* 缩小顶部提示，加粗并放大中心百分比 */
+      .match-text { font-size: 32px; font-weight: 900; line-height: 1; margin-bottom: 4px; } 
+      .match-subtext { font-size: 15px; font-weight: 700; margin-bottom: 16px; opacity: 0.9;} 
     </style>
   </head>
   <body>
@@ -637,31 +643,31 @@
             const guidanceText = result.guidance ? toChineseQuotes(result.guidance) : '';
             const comfortText = result.comfort ? toChineseQuotes(result.comfort) : '';
 
-            // 核心修复：极致压缩间距，紧贴风格
+            // 导师优化：调整了文本色为 #334155 增加呼吸感
             const guidance = guidanceText ? `
-              <div style="display:flex; align-items:center; gap:10px; margin-top: 10px; width: 100%;">
-                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 10px 16px; border-radius: 12px; border: 3px solid #1E293B; text-align: left; font-size: 14px; font-weight: 600; color: #1E293B;">
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom: 8px; width: 100%;">
+                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 16px; border: 3px solid #1E293B; text-align: left; font-size: 15px; font-weight: 600; color: #334155; line-height: 1.6;">
                     <strong style="color:${theme.text};">给你的悄悄话：</strong><br/>${escapeHtml(guidanceText)}
                 </div>
                 <button class="btn-sound" style="flex-shrink: 0;" onclick="window.speakText('${escapeHtml(guidanceText)}', this)" title="朗读悄悄话"><i class="ph-bold ph-speaker-high"></i></button>
               </div>` : '';
 
             const comfort = comfortText ? `
-              <div style="display:flex; align-items:center; gap:10px; margin-top: 10px; width: 100%;">
-                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 10px 16px; border-radius: 12px; border: 3px solid #1E293B; text-align: left; font-size: 14px; font-weight: 600; color: #1E293B;">
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom: 8px; width: 100%;">
+                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 16px; border: 3px solid #1E293B; text-align: left; font-size: 15px; font-weight: 600; color: #334155; line-height: 1.6;">
                     <strong style="color:${theme.text};">给对方的安抚：</strong><br/>${escapeHtml(comfortText)}
                 </div>
                 <button class="btn-sound" style="flex-shrink: 0;" onclick="window.speakText('${escapeHtml(comfortText)}', this)" title="朗读安抚"><i class="ph-bold ph-speaker-high"></i></button>
               </div>` : '';
 
             return `
-              <div class="heart-match-container" style="background-color: ${theme.bg};">
-                <div style="font-size:15px; color:${theme.text}; margin-bottom:12px; font-weight:900; display:flex; align-items:center; justify-content:center;"><i class="ph-fill ph-heart-straight"></i> 想法匹配度检测完成</div>
+              <div class="heart-match-container" style="background-color: ${theme.bg}; border-radius: 20px !important;">
+                <div style="font-size:15px; color:${theme.text}; margin-bottom:12px; font-weight:900; display:flex; align-items:center; justify-content:center; opacity: 0.8;"><i class="ph-fill ph-heart-straight"></i> 想法匹配度检测完成</div>
                 
                 <div class="heart-track" style="position:relative; height:40px; margin: 12px 10px 24px 10px;">
-                    <div style="position:absolute; top:50%; left:0; right:0; height:10px; background: white; border: 3px solid #1E293B; border-radius: 5px; transform: translateY(-50%); box-sizing:border-box;"></div>
-                    <div style="position:absolute; top:50%; left:0; width:calc(${pos}% + 10px); height:10px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 5px 0 0 5px; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
-                    <div style="position:absolute; top:50%; right:0; width:calc(${pos}% + 10px); height:10px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 0 5px 5px 0; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
+                    <div style="position:absolute; top:50%; left:0; right:0; height:12px; background: white; border: 3px solid #1E293B; border-radius: 6px; transform: translateY(-50%); box-sizing:border-box;"></div>
+                    <div style="position:absolute; top:50%; left:0; width:calc(${pos}% + 12px); height:12px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 6px 0 0 6px; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
+                    <div style="position:absolute; top:50%; right:0; width:calc(${pos}% + 12px); height:12px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 0 6px 6px 0; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
                     
                     <div class="heart heart-left" style="left: ${pos}%; top:50%; transform:translate(-50%, -50%); width: 36px; height: 36px; background: #DBEAFE; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #1E3A8A; font-weight:900; font-size:16px; z-index:2;">A</div>
                     <div class="heart heart-right" style="right: ${pos}%; top:50%; transform:translate(50%, -50%); width: 36px; height: 36px; background: #FEE2E2; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #991B1B; font-weight:900; font-size:16px; z-index:2;">B</div>
