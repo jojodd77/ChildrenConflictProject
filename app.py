@@ -133,56 +133,15 @@ def join():
 
     if session["scenario"] is None:
         # =================================================================
-        # 【核心修改 1】：场控大模型指令升级，强制精简字数、严禁造名字
+        # 【测试专用】：强行跳过场控Agent，直接写死测试剧本！秒出！
         # =================================================================
-        agent1_prompt = """
-        你是一个【场控Agent】，负责为7-11岁儿童生成具有丰富背景细节的社交冲突剧本。
-
-        【核心结构：敌意归因偏误】
-        1. 简短提要：交代清楚时间、地点、他们在干什么。
-        2. 突发意外：发生了一件让A受损失的倒霉事。
-        3. B的真实意图：B其实是好意或无意。
-        4. 造成误会的动作：B在现场做了一个动作，让A恰好抓到了“把柄”。
-        5. A的误解与情绪：A认定B是故意的，心里非常生气。
-
-        【绝对禁令（严守！）】
-        - 极简字数：为了减轻儿童阅读负担，storyA 和 storyB 必须精简，控制在 50-70 字左右！言简意赅。
-        - 绝对禁名：绝对不要给角色起任何名字（如小明、小红等）！
-        - 视角限定：storyA 必须完全代入A的视角，只能用“我”代表自己，“B”代表对方。
-        - 视角限定：storyB 必须完全代入B的视角，只能用“我”代表自己，“A”代表对方。
-        - 绝不能写出双方吵架的对话！在生气和委屈这一刻戛然而止。
-
-        严格只返回JSON格式：
-        {
-          "title": "场景标题",
-          "objective_fact": "客观事实",
-          "storyA": "今天...（A的视角，50字左右）",
-          "storyB": "今天...（B的视角，50字左右）",
-          "systemRule": "你现在心里有点着急哦，请由{who}先发言吧。"
+        session["scenario"] = {
+            "title": "积木城堡倒塌事件",
+            "objective_fact": "B转身拿自己的积木时没注意身后的桌子，胳膊肘不小心扫到了A搭好的城堡。",
+            "storyA": "我花了一节课搭好的积木城堡，转身拿图纸的功夫，就被 B 的胳膊扫塌了！他就是看我搭得好看，故意来捣乱！",
+            "storyB": "我转身拿自己的积木，没注意身后的桌子，胳膊肘不小心扫到了 A 的城堡。我真的没看见。",
+            "systemRule": "你现在心里有点着急哦，请由A先发言吧。"
         }
-        """
-        scenario_res = call_agent(agent1_prompt, "请随机生成一个全新的儿童冲突剧本。", agent_name="场控 Agent", temperature=0.8, timeout=25.0)
-
-        if scenario_res:
-            for key in ["storyA", "storyB", "title", "systemRule", "objective_fact"]:
-                if isinstance(scenario_res.get(key), dict):
-                    vals = list(scenario_res[key].values())
-                    scenario_res[key] = str(vals[0]) if vals else ""
-                elif isinstance(scenario_res.get(key), list):
-                    scenario_res[key] = str(scenario_res[key][0]) if scenario_res[key] else ""
-                else:
-                    scenario_res[key] = str(scenario_res.get(key, ""))
-            
-            session["scenario"] = scenario_res
-        else:
-            # 兜底剧本也进行了相应的字数精简
-            session["scenario"] = {
-                "title": "自然课上的植物标本（网络超时保底剧本）",
-                "objective_fact": "B看到一阵风快把A的标本吹跑了，想帮忙按住，却不小心压碎了。",
-                "storyA": "自然课上我刚拼好一只漂亮的树叶蝴蝶。一回头，竟看到B一巴掌拍在上面，标本全碎了！我快气哭了，B绝对是故意的！",
-                "storyB": "自然课上突然刮起大风，A的树叶蝴蝶要被吹跑了。我赶紧冲过去想帮忙按住，却没控制好力气，一巴掌压碎了标本。我真的是想帮忙的，好委屈。",
-                "systemRule": "你现在心里有点着急哦，请由A先发言吧。"
-            }
 
     if not any(m.get("meta") == "welcome" for m in session["chat"]):
         session["chat"].append({
@@ -231,6 +190,7 @@ def send_message():
 
         严格返回纯 JSON：{{"is_hostile": true/false}}
         """
+        # 聊天和拦截的 Agent 仍然保留，为了能正常测试你的冲突流程
         detect_res = call_agent(agent2_prompt, f"最新发言：[{text}]", agent_name="监听 Agent", temperature=0.1, timeout=12.0)
 
         is_hostile = False
@@ -318,7 +278,7 @@ def submit_freeze():
             
             - `guidance` (给发火方的悄悄话)：
               1. 共情：肯定TA因为遭受损失而生气的合理性。
-              2. 揭示真相（就事论事）：结合【客观事实真相】，告诉TA对方其实是出于好意。
+              2. 揭示真相（就事论事）：结合【客观事实真相】，告诉TA对方其实是出于好意或无意。
               3. 引导：鼓励TA用“我希望/我需要”重新表达感受，不要贴标签。
               
             - `comfort` (给被指责方的安抚)：
@@ -353,7 +313,7 @@ def submit_freeze():
                     comfort = ""
                 else:
                     if "发火方" in guidance or "的建议" in guidance or len(guidance) < 15:
-                        guidance = f"发生这样的事你肯定很生气，我都理解。但如果直接用伤人的词语，原本出于好意的朋友也会难过的。试着用“我希望...”重新告诉对方你的想法吧！"
+                        guidance = f"发生这样的事你肯定很生气，我都理解。但如果直接用伤人的词语，对方也会难过的。试着用“我希望...”重新告诉对方你的想法吧！"
                     if "被骂方" in comfort or "的安抚" in comfort or len(comfort) < 15:
                         comfort = "抱抱你，好心办坏事还被指责，心里一定很委屈。他只是太着急了没发现你的善意，我们耐心等他冷静下来换个说法吧。"
 
