@@ -10,7 +10,7 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=99" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=105" />
 
     <style>
       /* ==========================================
@@ -51,11 +51,10 @@
       .topbar { border-bottom: 3px solid #1E293B !important; box-shadow: none !important; background: white; }
       .chatHeader, .modal__header { border-bottom: none !important; box-shadow: none !important; }
 
-      .divider { display: none !important; } /* 隐藏原生分割线，用新排版替代 */
+      .divider { display: none !important; }
       .brand__logo { border: none !important; box-shadow: none !important; }
       .btn:active, .btn-sound:active, #modalClose:active, .super-btn:active { transform: scale(0.94) !important; }
       
-      /* 修复：输入框聚焦高亮改为浅绿色 */
       .input:focus, .textarea:focus { outline: none; background-color: #F8FAFC; border-color: #4ADE80 !important; }
       .textarea { resize: none !important; font-size: 16px !important; line-height: 1.6; } 
 
@@ -126,7 +125,7 @@
       .btn-sound.playing { background: #FDE047; }
 
       /* ==========================================
-         【7. 情境卡片美化排版 (修复强迫症)】
+         【7. 情境卡片美化排版】
          ========================================== */
       .contextCard { padding: 16px 0 !important; background: #FFFFFF !important; }
       .contextCard .card__title {
@@ -135,10 +134,10 @@
           background: transparent !important;
       }
       .contextCard .story {
-          border: 2px dashed #CBD5E1 !important; /* 恢复好看的虚线框 */
+          border: 2px dashed #CBD5E1 !important; 
           border-radius: 16px !important;
           padding: 16px 24px !important;
-          margin: 0 16px 16px 16px !important; /* 左右边距缩小，整体加宽 */
+          margin: 0 16px 16px 16px !important; 
           font-size: 16px !important;
           font-weight: 600 !important;
           line-height: 1.8 !important;
@@ -158,16 +157,8 @@
       }
 
       /* ==========================================
-         【8. 思考动画下移完美居中】
+         【8. 思考动画修复：清除幽灵间距，完美居中】
          ========================================== */
-      .typing-indicator-wrapper {
-          display: flex; 
-          justify-content: center; 
-          width: 100%; 
-          padding-top: 16px !important; /* 修复贴边：下移一点点 */
-          margin-bottom: 12px;
-          background: transparent !important;
-      }
       .typing-indicator { 
           display: none; 
           padding: 6px 16px 6px 8px !important; 
@@ -177,7 +168,7 @@
           gap: 8px !important; 
           width: fit-content; 
           font-size: 14px;
-          margin: 0 !important;
+          margin: 8px auto 16px auto !important; /* 调整间距，不让输入框太靠下 */
       }
       .typing-indicator.active { display: flex; }
       .dots { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px;}
@@ -340,10 +331,10 @@
 
                 <div class="chat" id="chatLog" aria-live="polite"></div>
 
-                <div class="typing-indicator-wrapper">
+                <div style="padding: 0 16px; display: flex; justify-content: center; width: 100%; box-sizing: border-box;">
                     <div class="typing-indicator" id="typingIndicator">
-                       <div class="avatar avatar--j" style="width: 28px; height: 28px; min-width: 28px; border: 2px solid #1E293B !important;">
-                           <i class="ph-bold ph-robot" style="color: #064E3B !important; font-size: 16px !important;"></i>
+                       <div class="avatar avatar--j" style="width: 24px; height: 24px; min-width: 24px; border: 2px solid #1E293B !important;">
+                           <i class="ph-bold ph-robot" style="color: #064E3B !important; font-size: 14px !important;"></i>
                        </div>
                        <div style="display: flex; align-items: center; font-weight: 700; font-size: 14px;">
                            法官精灵正在思考... 
@@ -472,6 +463,12 @@
         const appState = { code: "", role: null };
         let syncInterval = null;
         let currentSessionData = null;
+        
+        // 核心修复：自动转换中文字符双引号
+        function toChineseQuotes(str) {
+            if (!str) return str;
+            return str.replace(/['‘]([^'‘’]+?)['’]/g, "“$1”");
+        }
 
         // 语音引擎
         let preferredVoice = null;
@@ -614,11 +611,26 @@
             else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', text: '#B91C1C', lightText: '#DC2626', track: '#F87171' }; }
 
             const pos = (matchPercent / 100) * 40;
-
-            // 核心修复：喇叭移到框框内容的右侧 (后面)
-            const guidance = result.guidance ? `<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 16px; border: 3px solid #1E293B;"><div style="flex:1; padding-top:3px; font-size:15px; font-weight:600; text-align:left;"><strong>给你的悄悄话：</strong><br/>${result.guidance}</div><button class="btn-sound-light" onclick="window.speakText('${escapeHtml(result.guidance)}', this)" title="朗读悄悄话"><i class="ph-fill ph-speaker-high" style="font-size:28px; color:${theme.text};"></i></button></div>` : '';
             
-            const comfort = result.comfort ? `<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 16px; border: 3px solid #1E293B;"><div style="flex:1; padding-top:3px; font-size:15px; font-weight:600; text-align:left;"><strong>给对方的安抚：</strong><br/>${result.comfort}</div><button class="btn-sound-light" onclick="window.speakText('${escapeHtml(result.comfort)}', this)" title="朗读安抚"><i class="ph-fill ph-speaker-high" style="font-size:28px; color:${theme.text};"></i></button></div>` : '';
+            // 修复强迫症：喇叭完美放在框体外部，且使用纯正中文双引号
+            const guidanceText = result.guidance ? toChineseQuotes(result.guidance) : '';
+            const comfortText = result.comfort ? toChineseQuotes(result.comfort) : '';
+
+            const guidance = guidanceText ? `
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom: 8px; width: 100%;">
+                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 16px; border: 3px solid #1E293B; text-align: left; font-size: 15px; font-weight: 600; color: #1E293B;">
+                    <strong style="color:${theme.text};">给你的悄悄话：</strong><br/>${escapeHtml(guidanceText)}
+                </div>
+                <button class="btn-sound" style="flex-shrink: 0;" onclick="window.speakText('${escapeHtml(guidanceText)}', this)" title="朗读悄悄话"><i class="ph-bold ph-speaker-high"></i></button>
+              </div>` : '';
+
+            const comfort = comfortText ? `
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom: 8px; width: 100%;">
+                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 16px; border: 3px solid #1E293B; text-align: left; font-size: 15px; font-weight: 600; color: #1E293B;">
+                    <strong style="color:${theme.text};">给对方的安抚：</strong><br/>${escapeHtml(comfortText)}
+                </div>
+                <button class="btn-sound" style="flex-shrink: 0;" onclick="window.speakText('${escapeHtml(comfortText)}', this)" title="朗读安抚"><i class="ph-bold ph-speaker-high"></i></button>
+              </div>` : '';
 
             return `
               <div class="heart-match-container" style="background-color: ${theme.bg}; border-radius: 20px !important;">
@@ -672,7 +684,7 @@
                     <div class="bubble ${bubbleClass}">
                         <div style="text-align: left; line-height: 1.6;">${safeText}</div>
                     </div>
-                    <button class="btn-sound" onclick="window.speakText(this.previousElementSibling.innerText, this)" title="朗读/暂停"><i class="ph-bold ph-speaker-high"></i></button>
+                    <button class="btn-sound" onclick="window.speakText('${escapeHtml(text)}', this)" title="朗读/暂停"><i class="ph-bold ph-speaker-high"></i></button>
                 </div>`;
           }
 
@@ -719,7 +731,6 @@
               if (modal.getAttribute("aria-hidden") !== "false") {
                   const triggeredByMe = session.freeze.triggeredBy === appState.role;
                   const triggerTxt = session.freeze.triggerText || "刚才说的话";
-                  // 修复中文双引号
                   const blockquoteHtml = `<div class="quote-box">“${escapeHtml(triggerTxt)}”</div>`;
 
                   if (triggeredByMe && !session.freeze.aMotivation) { 
@@ -760,8 +771,8 @@
                   
                   const finalReport = session.freeze.finalReport || {
                       praise: "你们展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
-                      growth: "你们学会了‘停下来想一想’，并勇敢说出了感受，这就是最大的成长！",
-                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用“我希望...”来表达哦！" // 修复为中文引号
+                      growth: "你们学会了“停下来想一想”，并勇敢说出了感受，这就是最大的成长！",
+                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用“我希望...”来表达哦！"
                   };
                   $("finalPraise").textContent = finalReport.praise;
                   $("finalGrowth").textContent = finalReport.growth;
