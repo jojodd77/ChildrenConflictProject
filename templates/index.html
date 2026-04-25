@@ -7,13 +7,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=68" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=70" />
 
     <style>
       /* ==========================================
          【1. 终极统一规范：全量去阴影 + 统一3px描边】
-         强制接管系统所有组件，抹除所有阴影！
          ========================================== */
       .card, .bubble, .avatar, .input, .textarea, .btn, .chip, .presence, 
       .systemNotice, .hero__image, .modal__panel, .pause-box, 
@@ -24,21 +25,17 @@
           border: 3px solid #1E293B !important;
       }
 
-      /* 顶部与内容分隔线统一粗细 */
       .topbar, .chatHeader, .modal__header {
           border-bottom: 3px solid #1E293B !important;
           box-shadow: none !important;
       }
       
-      /* 品牌Logo保持透明无描边 */
       .brand__logo { border: none !important; box-shadow: none !important; }
 
-      /* 统一的按压交互反馈 (因为去掉了阴影，改用扁平化缩放) */
       .btn:active, .btn-sound:active, #modalClose:active, .super-btn:active {
           transform: scale(0.94) !important;
       }
       
-      /* 移除系统默认的焦点蓝框，用背景变色替代 */
       .input:focus, .textarea:focus { outline: none; background-color: #F8FAFC; }
 
       /* ==========================================
@@ -59,7 +56,7 @@
          ========================================== */
       .modal.loadingOverlay { position: fixed; inset: 0; z-index: 10001; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; border: none !important; }
       .modal.loadingOverlay[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
-      .magic-spinner { font-size: 80px; animation: magicWand 2.5s infinite linear; margin-bottom: 24px; }
+      .magic-spinner { font-size: 80px; animation: magicWand 2.5s infinite linear; margin-bottom: 24px; color: #D97706; }
       .loading-text { font-size: 18px; font-weight: 700; color: #D97706; text-align: center; }
       @keyframes magicWand { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
 
@@ -67,7 +64,7 @@
       #celebrationOverlay.show { opacity: 1; pointer-events: auto; }
       @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
       @keyframes floatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-      .celeb-icon { font-size: 100px; animation: popIn 0.6s ease forwards, floatBounce 2s ease-in-out infinite 0.6s; }
+      .celeb-icon { font-size: 100px; color: #F43F5E; animation: popIn 0.6s ease forwards, floatBounce 2s ease-in-out infinite 0.6s; }
       .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
 
       /* ==========================================
@@ -93,11 +90,11 @@
       /* ==========================================
          【5. 卡片内容布局】
          ========================================== */
-      .heart-match-container { border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; }
+      .heart-match-container { border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; transition: all 0.3s ease; }
       .heart-track { height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
       .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; }
-      .heart-left { left: 0%; }
-      .heart-right { right: 0%; }
+      .heart-left { left: 0%; color: #3B82F6; }
+      .heart-right { right: 0%; color: #EC4899; }
       .match-text { font-size: 24px; font-weight: 900; margin-top: 10px; }
       .match-subtext { font-size: 16px; font-weight: 700; margin-top: 5px; margin-bottom: 15px; }
 
@@ -126,11 +123,11 @@
 
       #waitRephraseOverlay { background: rgba(255, 255, 255, 0.95); z-index: 9900; }
       .pause-box { background: #EFF6FF !important; border-radius: 24px !important; padding: 40px !important; text-align: center; max-width: 500px; }
-      .pause-box h2 { color: #1E3A8A; font-size: 24px; font-weight: 900; margin-bottom: 10px; }
+      .pause-box h2 { color: #1E3A8A; font-size: 24px; font-weight: 900; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
       .pause-box p { font-size: 16px; color: #1E293B; line-height: 1.6; margin-bottom: 20px; font-weight: 600; }
 
       .report-card-super { background: #BFDBFE !important; border-radius: 24px !important; padding: 30px !important; text-align: center; max-width: 600px; }
-      .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+      .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
       .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 900; }
       .super-tip-box { background: white !important; border-radius: 16px !important; padding: 15px !important; margin: 15px 0 !important; font-size: 14px; text-align: left; line-height: 1.6; }
       .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
@@ -156,25 +153,27 @@
   </head>
   <body>
     <div id="globalLoading" class="modal loadingOverlay" aria-hidden="true">
-        <div class="magic-spinner">✨</div>
+        <div class="magic-spinner"><i class="ph-bold ph-magic-wand"></i></div>
         <div class="loading-text">法官精灵正在为你编织故事剧本，请稍等...</div>
     </div>
 
     <div id="celebrationOverlay">
-        <div class="celeb-icon">👦🤝👧💖🌸✨</div>
+        <div class="celeb-icon"><i class="ph-bold ph-handshake"></i></div>
         <div class="celeb-text">心心相印！太棒了，误会解除啦！</div>
     </div>
 
     <div class="modal loadingOverlay" id="waitRephraseOverlay" aria-hidden="true">
         <div class="pause-box">
-            <div style="font-size: 60px; margin-bottom: 15px; animation: floatBounce 2s infinite;">⏸️</div>
-            <h2>我们先暂停一下</h2>
+            <h2>
+                <i class="ph-bold ph-pause-circle" style="font-size: 60px; color: #3B82F6; animation: floatBounce 2s infinite;"></i>
+                我们先暂停一下
+            </h2>
             <p>
-                生气的话就像小火苗，吵架会让火越来越大哦！🔥<br><br>
+                生气的话就像小火苗，吵架会让火越来越大哦！<i class="ph-bold ph-fire" style="color: #EA580C;"></i><br><br>
                 对方现在正在法官精灵的帮助下，重新组织语言。<br>
                 我们耐心等等看，换一种温柔的说法，是不是更能解决问题呢？
             </p>
-            <div style="color: #2563EB; font-weight: 900;">等待对方重新发送消息...</div>
+            <div style="color: #2563EB; font-weight: 900;"><i class="ph-bold ph-spinner-gap" style="animation: spin 1s linear infinite;"></i> 等待对方重新发送消息...</div>
         </div>
     </div>
 
@@ -188,7 +187,7 @@
         </div>
         <div class="topbar__right">
           <div class="chip" id="chipRole">未选择身份</div>
-          <button class="btn btn--ghost" id="btnReset" type="button">退出</button>
+          <button class="btn btn--ghost" id="btnReset" type="button"><i class="ph-bold ph-sign-out"></i> 退出</button>
         </div>
       </header>
 
@@ -204,7 +203,7 @@
                   <span class="field__label">会话码（用于两端联动）</span>
                   <div class="field__row" style="display: flex; gap: 8px;">
                     <input class="input" id="sessionCode" autocomplete="off" spellcheck="false" />
-                    <button class="btn btn--ghost" id="btnNewSession" type="button">🎲 随机生成</button>
+                    <button class="btn btn--ghost" id="btnNewSession" type="button"><i class="ph-bold ph-dice-three"></i> 随机生成</button>
                   </div>
                 </label>
               </div>
@@ -228,8 +227,8 @@
             <section class="content content--stack">
               <div class="card card--tight contextCard">
                 <div class="card__title" style="display:flex; justify-content:space-between; align-items:center;">
-                   <span>📖 本次情境</span>
-                   <button class="btn--read" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停">🔊 读给我听</button>
+                   <span><i class="ph-bold ph-book-open-text" style="position:relative; top:2px;"></i> 本次情境</span>
+                   <button class="btn--read" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停"><i class="ph-bold ph-speaker-high"></i> 读给我听</button>
                 </div>
                 <div class="story" id="storyText"></div>
                 <div class="divider"></div>
@@ -255,7 +254,7 @@
                 <div style="padding: 0 16px;">
                     <div class="typing-indicator" id="typingIndicator">
                        <div class="avatar avatar--j">
-                           <span style="font-size:12px;">法</span>
+                           <i class="ph-bold ph-magic-wand" style="font-size: 18px;"></i>
                        </div>
                        法官精灵正在努力思考中... <div class="dots"><span></span><span></span><span></span></div>
                     </div>
@@ -263,10 +262,10 @@
 
                 <div class="composer">
                   <div id="negotiateActions" style="display: none; padding-bottom: 12px; text-align: center;">
-                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: #A7F3D0; color: #064E3B; width: 100%; font-weight: 900;">🤝 我们商量好了 (点击拉钩)</button>
+                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: #A7F3D0; color: #064E3B; width: 100%; font-weight: 900;"><i class="ph-bold ph-handshake"></i> 我们商量好了 (点击拉钩)</button>
                   </div>
                   <div class="composer__row">
-                    <button class="btn btn--mic" id="btnMicChat" title="点击麦克风直接说话">🎤</button>
+                    <button class="btn btn--mic" id="btnMicChat" title="点击麦克风直接说话"><i class="ph-bold ph-microphone"></i></button>
                     <input class="input input--big" id="composerInput" placeholder="点左边麦克风说话，或在这打字…" autocomplete="off" />
                     <button class="btn btn--primary" id="btnSend" type="button">发送</button>
                   </div>
@@ -285,13 +284,13 @@
       <div class="modal__panel" role="document">
         <div class="modal__header">
           <div class="modal__title" id="modalTitle">标题</div>
-          <button class="iconBtn" id="modalClose" type="button" aria-label="关闭">×</button>
+          <button class="iconBtn" id="modalClose" type="button" aria-label="关闭"><i class="ph-bold ph-x"></i></button>
         </div>
         <div class="modal__body">
           <div class="modal__desc" id="modalDesc" style="margin-bottom: 12px;"></div>
           
           <div class="modal-mic-container">
-              <button class="btn btn--mic" id="btnMicModal" title="点击麦克风直接说话">🎤</button>
+              <button class="btn btn--mic" id="btnMicModal" title="点击麦克风直接说话"><i class="ph-bold ph-microphone"></i></button>
               <div class="mic-text-hint" id="modalMicHint">点击麦克风，直接说出你的想法</div>
           </div>
 
@@ -304,7 +303,7 @@
         </div>
         <div class="modal__footer">
           <button class="btn btn--ghost" id="modalCancel" type="button">稍后</button>
-          <button class="btn btn--primary" id="modalSubmit" type="button">✨ 提交我的想法</button>
+          <button class="btn btn--primary" id="modalSubmit" type="button"><i class="ph-bold ph-paper-plane-tilt"></i> 提交我的想法</button>
         </div>
       </div>
     </div>
@@ -313,27 +312,27 @@
       <div class="modal__backdrop"></div>
       <div class="modal__panel" role="document" style="background: transparent; border: none !important;">
         <div class="report-card-super">
-          <h2>🏆 调解大成功！</h2>
+          <h2><i class="ph-bold ph-trophy" style="color: #D97706;"></i> 调解大成功！</h2>
           <p>这是法官精灵为你们颁发的专属《成长报告》</p>
 
           <div class="super-tip-box">
-            <strong style="color: #047857;">💖 闪光点：</strong><br>
+            <strong style="color: #047857;"><i class="ph-bold ph-sparkle"></i> 闪光点：</strong><br>
             <span id="finalPraise">解析中...</span>
           </div>
 
           <div class="super-tip-box">
-            <strong style="color: #1D4ED8;">🌱 你们的成长：</strong><br>
+            <strong style="color: #1D4ED8;"><i class="ph-bold ph-plant"></i> 你们的成长：</strong><br>
             <span id="finalGrowth">解析中...</span>
           </div>
 
           <div class="super-tip-box">
-            <strong style="color: #A16207;">💡 精灵小贴士：</strong><br>
+            <strong style="color: #A16207;"><i class="ph-bold ph-lightbulb"></i> 精灵小贴士：</strong><br>
             <span id="finalTip">解析中...</span>
           </div>
 
           <div class="super-btn-group">
-              <button class="super-btn super-btn-ghost" id="btnReviewChat">复盘聊天</button>
-              <button class="super-btn super-btn-primary" id="btnReturnHome">再玩一次</button>
+              <button class="super-btn super-btn-ghost" id="btnReviewChat"><i class="ph-bold ph-chat-centered-text"></i> 复盘聊天</button>
+              <button class="super-btn super-btn-primary" id="btnReturnHome"><i class="ph-bold ph-arrow-counter-clockwise"></i> 再玩一次</button>
           </div>
         </div>
       </div>
@@ -403,7 +402,7 @@
             if (speechSynthesis.speaking && window.currentSpeakingBtn === btnElement) { 
                 speechSynthesis.cancel(); 
                 if(btnElement) { 
-                    btnElement.innerHTML = btnElement.dataset.origText || '🔊 读给我听'; 
+                    btnElement.innerHTML = btnElement.dataset.origText || '<i class="ph-bold ph-speaker-high"></i> 读给我听'; 
                     btnElement.classList.remove('playing'); 
                 } 
                 window.currentSpeakingBtn = null; 
@@ -412,7 +411,7 @@
             
             speechSynthesis.cancel(); 
             if (window.currentSpeakingBtn) { 
-                window.currentSpeakingBtn.innerHTML = window.currentSpeakingBtn.dataset.origText || '🔊 读给我听'; 
+                window.currentSpeakingBtn.innerHTML = window.currentSpeakingBtn.dataset.origText || '<i class="ph-bold ph-speaker-high"></i> 读给我听'; 
                 window.currentSpeakingBtn.classList.remove('playing'); 
             }
             
@@ -424,7 +423,7 @@
             
             utterance.onend = utterance.onerror = () => { 
                 if(btnElement) { 
-                    btnElement.innerHTML = btnElement.dataset.origText || '🔊 读给我听'; 
+                    btnElement.innerHTML = btnElement.dataset.origText || '<i class="ph-bold ph-speaker-high"></i> 读给我听'; 
                     btnElement.classList.remove('playing'); 
                 } 
                 window.currentSpeakingBtn = null; 
@@ -434,7 +433,7 @@
             
             if(btnElement) { 
                 if (!btnElement.dataset.origText) btnElement.dataset.origText = btnElement.innerHTML; 
-                btnElement.innerHTML = '⏸️ 正在朗读...'; 
+                btnElement.innerHTML = '<i class="ph-bold ph-pause"></i> 正在朗读...'; 
                 btnElement.classList.add('playing'); 
                 window.currentSpeakingBtn = btnElement; 
             }
@@ -465,8 +464,8 @@
                 isRecording = true;
                 btn.classList.add("recording");
                 originalValue = input.value; 
-                input.placeholder = "🔴 正在倾听你的声音... (说完点麦克风结束)";
-                if(isModal) $("modalMicHint").textContent = "🔴 正在倾听... (说完再次点击结束)";
+                input.placeholder = "正在倾听你的声音... (说完点麦克风结束)";
+                if(isModal) $("modalMicHint").textContent = "正在倾听... (说完再次点击结束)";
                 try { recognition.start(); } catch(e) {}
             };
 
@@ -512,15 +511,15 @@
             else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#FFFBEB', text: '#B45309', lightText: '#D97706' }; }
             else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', text: '#B91C1C', lightText: '#DC2626' }; }
 
-            const guidance = result.guidance ? `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.guidance)}', this)">🔊</button><div style="flex:1; padding-top:4px;"><strong>给你的悄悄话：</strong>${result.guidance}</div></div>` : '';
-            const comfort = result.comfort ? `<div style="display:flex; align-items:flex-start; gap:8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.comfort)}', this)">🔊</button><div style="flex:1; padding-top:4px;"><strong>给对方的安抚：</strong>${result.comfort}</div></div>` : '';
+            const guidance = result.guidance ? `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.guidance)}', this)"><i class="ph-bold ph-speaker-high"></i></button><div style="flex:1; padding-top:4px;"><strong>给你的悄悄话：</strong>${result.guidance}</div></div>` : '';
+            const comfort = result.comfort ? `<div style="display:flex; align-items:flex-start; gap:8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.comfort)}', this)"><i class="ph-bold ph-speaker-high"></i></button><div style="flex:1; padding-top:4px;"><strong>给对方的安抚：</strong>${result.comfort}</div></div>` : '';
 
             return `
               <div class="heart-match-container" style="background-color: ${theme.bg};">
-                <div style="font-size:14px; color:${theme.text}; margin-bottom:10px; font-weight:bold;">💖 心心匹配度检测完成</div>
+                <div style="font-size:14px; color:${theme.text}; margin-bottom:10px; font-weight:bold;"><i class="ph-bold ph-heart-straight"></i> 心心匹配度检测完成</div>
                 <div class="heart-track">
-                    <div class="heart heart-left" style="left: ${40 - offset}%">👦</div>
-                    <div class="heart heart-right" style="right: ${40 - offset}%">👧</div>
+                    <div class="heart heart-left" style="left: ${40 - offset}%"><i class="ph-fill ph-smiley"></i></div>
+                    <div class="heart heart-right" style="right: ${40 - offset}%"><i class="ph-fill ph-smiley"></i></div>
                 </div>
                 <div class="match-text" style="color:${theme.text};">想法匹配度：${matchPercent}%</div>
                 <div class="match-subtext" style="color: ${theme.lightText};">${title}</div>
@@ -541,7 +540,12 @@
 
           const avatar = document.createElement("div");
           avatar.className = "avatar " + (displayFrom === "A" ? "avatar--a" : displayFrom === "B" ? "avatar--b" : "avatar--j");
-          avatar.innerHTML = `<span style="display: block; color: #1E293B !important; font-weight: 900 !important; font-size: 16px !important;">${displayFrom === "J" ? "法" : displayFrom}</span>`;
+          
+          if(displayFrom === "J") {
+              avatar.innerHTML = `<i class="ph-bold ph-magic-wand" style="font-size: 20px; color: #064E3B;"></i>`;
+          } else {
+              avatar.innerHTML = `<span style="display: block; color: #1E293B !important; font-weight: 900 !important; font-size: 16px !important;">${displayFrom}</span>`;
+          }
 
           const contentWrap = document.createElement("div");
           contentWrap.className = "msg-content-wrap";
@@ -550,12 +554,12 @@
             contentWrap.innerHTML = renderHeartCard(extra);
           } else {
             const bubbleClass = displayFrom === "A" ? "bubble--a" : displayFrom === "B" ? "bubble--b" : "bubble--j";
-            const safeText = escapeHtml(text);
+            const safeText = kind === "system" ? text : escapeHtml(text);
             contentWrap.innerHTML = `
                 <div class="bubble ${bubbleClass}">
                     <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
                         <div style="flex: 1; text-align: left;">${safeText}</div>
-                        <button class="btn-sound" onclick="window.speakText('${safeText}', this)" title="朗读/暂停">🔊</button>
+                        <button class="btn-sound" onclick="window.speakText(this.previousElementSibling.innerText, this)" title="朗读/暂停"><i class="ph-bold ph-speaker-high"></i></button>
                     </div>
                 </div>`;
           }
@@ -683,7 +687,7 @@
             btnAgree.style.background = "#E2E8F0"; 
             btnAgree.style.color = "#475569";
             btnAgree.style.transform = "scale(0.98)";
-            btnAgree.textContent = "⏳ 法官精灵正在写报告，请稍等几秒..."; 
+            btnAgree.innerHTML = '<i class="ph-bold ph-spinner-gap" style="animation: spin 1s linear infinite;"></i> 正在写报告...'; 
             await fetch('/api/agree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role }) }); 
         };
 
