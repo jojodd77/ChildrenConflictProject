@@ -10,7 +10,7 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=98" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=99" />
 
     <style>
       /* ==========================================
@@ -22,29 +22,18 @@
           -webkit-font-smoothing: antialiased !important; 
           -moz-osx-font-smoothing: grayscale !important;
       }
-      
-      input::placeholder, textarea::placeholder {
-          color: #94A3B8 !important;
-          font-weight: 600 !important;
-          opacity: 1 !important;
-      }
+      input::placeholder, textarea::placeholder { color: #94A3B8 !important; font-weight: 600 !important; opacity: 1 !important; }
 
       /* ==========================================
          【1. 全局：Icon 尺寸与对齐优化】
          ========================================== */
-      i[class^="ph-"] {
-          font-size: 1.3em !important; 
-          vertical-align: -0.18em !important; 
-          margin-right: 4px !important;
-          top: 0 !important; 
-      }
+      i[class^="ph-"] { font-size: 1.3em !important; vertical-align: -0.18em !important; margin-right: 4px !important; top: 0 !important; }
       .avatar i[class^="ph-"] { font-size: 24px !important; margin-right: 0 !important; }
       .btn--mic i[class^="ph-"] { font-size: 32px !important; margin-right: 0 !important; }
       .btn-sound i[class^="ph-"] { font-size: 18px !important; margin-right: 0 !important; vertical-align: 0 !important;}
       .celeb-icon i[class^="ph-"] { font-size: 80px !important; margin-right: 0 !important; }
       .heart-track i[class^="ph-"] { font-size: 40px !important; margin-right: 0 !important; }
       #modalClose i[class^="ph-"] { font-size: 16px !important; margin-right: 0 !important; vertical-align: 0 !important;}
-      
       .btn-sound-light i[class^="ph-"] { margin-right: 0 !important; vertical-align: 0 !important; }
 
       /* ==========================================
@@ -62,11 +51,12 @@
       .topbar { border-bottom: 3px solid #1E293B !important; box-shadow: none !important; background: white; }
       .chatHeader, .modal__header { border-bottom: none !important; box-shadow: none !important; }
 
-      .divider { border-top: 2px dashed #CBD5E1 !important; border-bottom: none !important; margin: 16px 0 !important; background: transparent !important; height: 0 !important; }
+      .divider { display: none !important; } /* 隐藏原生分割线，用新排版替代 */
       .brand__logo { border: none !important; box-shadow: none !important; }
       .btn:active, .btn-sound:active, #modalClose:active, .super-btn:active { transform: scale(0.94) !important; }
       
-      .input:focus, .textarea:focus { outline: none; background-color: #F8FAFC; border-color: #3B82F6 !important; }
+      /* 修复：输入框聚焦高亮改为浅绿色 */
+      .input:focus, .textarea:focus { outline: none; background-color: #F8FAFC; border-color: #4ADE80 !important; }
       .textarea { resize: none !important; font-size: 16px !important; line-height: 1.6; } 
 
       .btn-sound-light { border: none !important; background: transparent !important; padding: 0 !important; cursor: pointer; transition: transform 0.15s ease !important; outline: none; display: flex; align-items: center; justify-content: center;}
@@ -136,50 +126,58 @@
       .btn-sound.playing { background: #FDE047; }
 
       /* ==========================================
-         【7. 情境卡片美化 (不再死板，更显呼吸感)】
+         【7. 情境卡片美化排版 (修复强迫症)】
          ========================================== */
+      .contextCard { padding: 16px 0 !important; background: #FFFFFF !important; }
+      .contextCard .card__title {
+          padding: 0 24px 12px 24px !important;
+          border-bottom: none !important;
+          background: transparent !important;
+      }
       .contextCard .story {
+          border: 2px dashed #CBD5E1 !important; /* 恢复好看的虚线框 */
+          border-radius: 16px !important;
+          padding: 16px 24px !important;
+          margin: 0 16px 16px 16px !important; /* 左右边距缩小，整体加宽 */
           font-size: 16px !important;
           font-weight: 600 !important;
-          line-height: 1.7 !important;
+          line-height: 1.8 !important;
           color: #334155 !important;
-          padding: 4px 0 !important;
+          background: transparent !important;
       }
       .contextCard .systemNotice {
-          background: #FEF9C3 !important; /* 温柔的淡黄色 */
-          border: 2px dashed #F59E0B !important; /* 可爱的虚线框 */
+          background: #FEF9C3 !important; 
+          border: 2px dashed #F59E0B !important; 
           color: #B45309 !important;
           padding: 12px 16px !important;
           border-radius: 16px !important;
           font-weight: 700 !important;
           font-size: 15px !important;
+          margin: 0 16px !important;
           box-shadow: none !important;
-          margin-top: 8px !important;
       }
 
-      .heart-match-container { padding: 24px 32px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; transition: all 0.3s ease; }
-      .heart-track { position: relative; height: 48px; margin: 20px 0 36px 0; }
-      .heart { position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; display: flex; align-items: center; justify-content: center;}
-      .match-text { font-size: 40px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
-      .match-subtext { font-size: 16px; font-weight: 700; margin-bottom: 24px; }
-
-      /* 修复强迫症：思考中动画完美居中且精简变窄 */
+      /* ==========================================
+         【8. 思考动画下移完美居中】
+         ========================================== */
       .typing-indicator-wrapper {
           display: flex; 
           justify-content: center; 
           width: 100%; 
+          padding-top: 16px !important; /* 修复贴边：下移一点点 */
           margin-bottom: 12px;
+          background: transparent !important;
       }
       .typing-indicator { 
           display: none; 
           padding: 6px 16px 6px 8px !important; 
-          background: #FEF3C7; 
-          color: #B45309; 
+          background: #FEF3C7 !important; 
+          color: #B45309 !important; 
           align-items: center; 
           gap: 8px !important; 
           width: fit-content; 
           font-size: 14px;
-          margin: 0 !important; /* 靠wrapper居中，清除默认外边距 */
+          margin: 0 !important;
       }
       .typing-indicator.active { display: flex; }
       .dots { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px;}
@@ -187,15 +185,15 @@
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
       /* ==========================================
-         【8. 各大弹窗排版】
+         【9. 各大弹窗排版】
          ========================================== */
       #modal .modal__panel { padding: 0 !important; background: #F8FAFC !important; overflow: hidden; max-width: 500px !important; }
-      #modal .modal__header { background: #6EE7B7 !important; padding: 16px 24px !important; display: flex; justify-content: space-between; align-items: center; }
+      #modal .modal__header { background: #6EE7B7 !important; padding: 16px 24px !important; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1E293B !important; }
       #modal .modal__title { font-weight: 900 !important; font-size: 20px !important; }
       #modal .modal__body { padding: 24px !important; }
       #modal .modal__footer { padding: 0 24px 24px !important; border-top: none !important; display: flex; gap: 12px; justify-content: flex-end; }
       
-      #modalClose { background: #FDA4AF !important; width: 32px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; }
+      #modalClose { background: #FDA4AF !important; width: 32px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; border: 3px solid #1E293B !important;}
       #modalCancel { background: #FDE047 !important; font-weight: 900 !important; padding: 10px 24px !important; font-size: 15px;}
       #modalSubmit { background: #6EE7B7 !important; color: #064E3B !important; font-weight: 900 !important; padding: 10px 24px !important; font-size: 15px;}
 
@@ -214,18 +212,18 @@
       .super-tip-box { background: white !important; padding: 15px !important; margin: 15px 0 !important; font-size: 15px; text-align: left; line-height: 1.6; font-weight: 600;}
       .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
       .super-btn { padding: 12px 24px; font-weight: 900; font-size: 16px; cursor: pointer; }
-      .super-btn-ghost { background: white; }
-      .super-btn-primary { background: #818CF8; }
+      .super-btn-ghost { background: white; color: #1E293B; }
+      .super-btn-primary { background: #818CF8; color: #1E293B; }
 
       /* ==========================================
-         【9. 聊天气泡对齐】
+         【10. 聊天气泡对齐】
          ========================================== */
       .msg-container { display: flex; align-items: center; gap: 8px; max-width: 100%; }
       .msg--right .msg-container { flex-direction: row-reverse; }
 
       .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: center !important; margin-bottom: 12px; gap: 12px;}
       .msg--right { flex-direction: row-reverse !important; }
-      .avatar { flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+      .avatar { flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 3px solid #1E293B !important;}
       .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; }
       .avatar--a { background: #FEE2E2 !important; color: #991B1B !important; }
       .avatar--b { background: #DBEAFE !important; color: #1E3A8A !important; }
@@ -234,6 +232,11 @@
       .msg--right .msg-content-wrap { align-items: flex-end; }
       .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; padding: 12px 16px; font-size: 16px; font-weight: 600; line-height: 1.6;}
       
+      .heart-match-container { padding: 24px 32px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; transition: all 0.3s ease; border: 3px solid #1E293B !important;}
+      .heart-track { position: relative; height: 48px; margin: 20px 0 36px 0; }
+      .heart { position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; display: flex; align-items: center; justify-content: center;}
+      .match-text { font-size: 40px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
+      .match-subtext { font-size: 16px; font-weight: 700; margin-bottom: 24px; }
     </style>
   </head>
   <body>
@@ -312,13 +315,12 @@
         <section class="screen" id="screenChat" aria-label="对话页">
           <div class="layout layout--stack">
             <section class="content content--stack">
-              <div class="card card--tight contextCard">
+              <div class="card contextCard">
                 <div class="card__title" style="display:flex; justify-content:space-between; align-items:center;">
                    <span style="display:flex; align-items:center;"><i class="ph-bold ph-book-open-text"></i> 本次情境</span>
                    <button class="btn--read" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停"><i class="ph-bold ph-speaker-high"></i> 读给我听</button>
                 </div>
                 <div class="story" id="storyText"></div>
-                <div class="divider"></div>
                 <div class="systemNotice" id="systemNotice"></div>
               </div>
 
@@ -338,15 +340,15 @@
 
                 <div class="chat" id="chatLog" aria-live="polite"></div>
 
-                <div style="padding: 0 16px;">
-                    <div class="typing-indicator-wrapper">
-                        <div class="typing-indicator" id="typingIndicator">
-                           <div class="avatar avatar--j" style="width: 24px; height: 24px; min-width: 24px; border: 2px solid #1E293B !important;">
-                               <i class="ph-bold ph-robot" style="color: #064E3B !important; font-size: 14px !important;"></i>
-                           </div>
-                           <span style="font-weight: 700;">法官精灵思考中...</span>
-                           <div class="dots"><span></span><span></span><span></span></div>
-                        </div>
+                <div class="typing-indicator-wrapper">
+                    <div class="typing-indicator" id="typingIndicator">
+                       <div class="avatar avatar--j" style="width: 28px; height: 28px; min-width: 28px; border: 2px solid #1E293B !important;">
+                           <i class="ph-bold ph-robot" style="color: #064E3B !important; font-size: 16px !important;"></i>
+                       </div>
+                       <div style="display: flex; align-items: center; font-weight: 700; font-size: 14px;">
+                           法官精灵正在思考... 
+                           <div class="dots" style="margin-left: 4px;"><span></span><span></span><span></span></div>
+                       </div>
                     </div>
                 </div>
 
@@ -613,11 +615,13 @@
 
             const pos = (matchPercent / 100) * 40;
 
-            const guidance = result.guidance ? `<div style="display:flex; align-items:flex-start; gap:12px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 16px; border: 3px solid #1E293B;"><button class="btn-sound-light" onclick="window.speakText('${escapeHtml(result.guidance)}', this)" title="朗读悄悄话"><i class="ph-fill ph-speaker-high" style="font-size:28px; color:${theme.text};"></i></button><div style="flex:1; padding-top:3px; font-size:15px; font-weight:600;"><strong>给你的悄悄话：</strong><br/>${result.guidance}</div></div>` : '';
-            const comfort = result.comfort ? `<div style="display:flex; align-items:flex-start; gap:12px; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 16px; border: 3px solid #1E293B;"><button class="btn-sound-light" onclick="window.speakText('${escapeHtml(result.comfort)}', this)" title="朗读安抚"><i class="ph-fill ph-speaker-high" style="font-size:28px; color:${theme.text};"></i></button><div style="flex:1; padding-top:3px; font-size:15px; font-weight:600;"><strong>给对方的安抚：</strong><br/>${result.comfort}</div></div>` : '';
+            // 核心修复：喇叭移到框框内容的右侧 (后面)
+            const guidance = result.guidance ? `<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 16px; border: 3px solid #1E293B;"><div style="flex:1; padding-top:3px; font-size:15px; font-weight:600; text-align:left;"><strong>给你的悄悄话：</strong><br/>${result.guidance}</div><button class="btn-sound-light" onclick="window.speakText('${escapeHtml(result.guidance)}', this)" title="朗读悄悄话"><i class="ph-fill ph-speaker-high" style="font-size:28px; color:${theme.text};"></i></button></div>` : '';
+            
+            const comfort = result.comfort ? `<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 16px; border: 3px solid #1E293B;"><div style="flex:1; padding-top:3px; font-size:15px; font-weight:600; text-align:left;"><strong>给对方的安抚：</strong><br/>${result.comfort}</div><button class="btn-sound-light" onclick="window.speakText('${escapeHtml(result.comfort)}', this)" title="朗读安抚"><i class="ph-fill ph-speaker-high" style="font-size:28px; color:${theme.text};"></i></button></div>` : '';
 
             return `
-              <div class="heart-match-container" style="background-color: ${theme.bg};">
+              <div class="heart-match-container" style="background-color: ${theme.bg}; border-radius: 20px !important;">
                 <div style="font-size:16px; color:${theme.text}; margin-bottom:24px; font-weight:900; display:flex; align-items:center; justify-content:center;"><i class="ph-fill ph-heart-straight"></i> 想法匹配度检测完成</div>
                 
                 <div class="heart-track" style="position:relative; height:48px; margin: 10px 10px 30px 10px;">
@@ -685,7 +689,6 @@
           if (session.scenario) { 
               storyText.textContent = appState.role === "A" ? session.scenario.storyA : session.scenario.storyB; 
               
-              // 核心修复：根据身份动态生成完全不同的法官提示
               let noticeText = appState.role === "A" 
                   ? "你现在心里有点着急，请由你先发言吧。" 
                   : "对方现在心里有点着急，请耐心等待对方（A）先开场吧。";
@@ -716,7 +719,8 @@
               if (modal.getAttribute("aria-hidden") !== "false") {
                   const triggeredByMe = session.freeze.triggeredBy === appState.role;
                   const triggerTxt = session.freeze.triggerText || "刚才说的话";
-                  const blockquoteHtml = `<div class="quote-box">"${escapeHtml(triggerTxt)}"</div>`;
+                  // 修复中文双引号
+                  const blockquoteHtml = `<div class="quote-box">“${escapeHtml(triggerTxt)}”</div>`;
 
                   if (triggeredByMe && !session.freeze.aMotivation) { 
                       modalTitle.textContent = "刚才发火真实的出发点是？"; 
@@ -757,7 +761,7 @@
                   const finalReport = session.freeze.finalReport || {
                       praise: "你们展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
                       growth: "你们学会了‘停下来想一想’，并勇敢说出了感受，这就是最大的成长！",
-                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用‘我希望...’来表达哦！"
+                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用“我希望...”来表达哦！" // 修复为中文引号
                   };
                   $("finalPraise").textContent = finalReport.praise;
                   $("finalGrowth").textContent = finalReport.growth;
