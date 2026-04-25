@@ -9,214 +9,47 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=110" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=120" />
 
     <style>
-      /* ==========================================
-         【0. 全局排版与字体规范 (Typography)】
-         ========================================== */
-      body, button, input, textarea, select {
-          font-family: 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-          color: #1E293B !important; 
-          -webkit-font-smoothing: antialiased !important; 
-          -moz-osx-font-smoothing: grayscale !important;
-      }
-      input::placeholder, textarea::placeholder { color: #94A3B8 !important; font-weight: 600 !important; opacity: 1 !important; }
+      body, button, input, textarea, select { font-family: 'Noto Sans SC', sans-serif !important; color: #1E293B !important; -webkit-font-smoothing: antialiased !important; }
+      input::placeholder, textarea::placeholder { color: #94A3B8 !important; font-weight: 600 !important; }
 
-      /* ==========================================
-         【1. 全局：Icon 尺寸与对齐优化】
-         ========================================== */
-      i[class^="ph-"] { font-size: 1.3em !important; vertical-align: -0.18em !important; margin-right: 4px !important; top: 0 !important; }
-      .avatar i[class^="ph-"] { font-size: 24px !important; margin-right: 0 !important; }
-      .btn--mic i[class^="ph-"] { font-size: 32px !important; margin-right: 0 !important; }
-      .btn-sound i[class^="ph-"] { font-size: 18px !important; margin-right: 0 !important; vertical-align: 0 !important;}
-      .celeb-icon i[class^="ph-"] { font-size: 80px !important; margin-right: 0 !important; }
-      .heart-track i[class^="ph-"] { font-size: 40px !important; margin-right: 0 !important; }
-      #modalClose i[class^="ph-"] { font-size: 16px !important; margin-right: 0 !important; vertical-align: 0 !important;}
-      .btn-sound-light i[class^="ph-"] { margin-right: 0 !important; vertical-align: 0 !important; }
-
-      /* ==========================================
-         【2. 终极统一规范：全量去阴影 + 统一3px外描边】
-         ========================================== */
-      .card, .bubble, .avatar, .input, .textarea, .btn, .chip, .presence, 
-      .hero__image, .modal__panel, .pause-box, 
-      .report-card-super, .super-tip-box, .heart-match-container, 
-      .quote-box, #modalClose, .modal-mic-container,
-      .btn-sound, .super-btn {
-          box-shadow: none !important;
-          border: 3px solid #1E293B !important;
+      /* 统一图标 */
+      i[class^="ph-"] { font-size: 1.3em !important; vertical-align: -0.18em !important; margin-right: 4px !important; }
+      .btn-sound, .btn-sound-light { cursor: pointer; display: flex; align-items: center; justify-content: center; }
+      
+      /* 卡片与气泡 */
+      .card, .bubble, .avatar, .input, .textarea, .btn, .chip, .presence, .hero__image, .modal__panel, .pause-box, .report-card-super, .super-tip-box, .heart-match-container, .quote-box, #modalClose, .modal-mic-container, .super-btn {
+          box-shadow: none !important; border: 3px solid #1E293B !important;
       }
 
-      .topbar { border-bottom: 3px solid #1E293B !important; box-shadow: none !important; background: white; }
-      .chatHeader, .modal__header { border-bottom: none !important; box-shadow: none !important; }
-
-      .divider { display: none !important; }
-      .brand__logo { border: none !important; box-shadow: none !important; }
-      .btn:active, .btn-sound:active, #modalClose:active, .super-btn:active { transform: scale(0.94) !important; }
-      
-      .input:focus, .textarea:focus { outline: none; background-color: #F8FAFC; border-color: #4ADE80 !important; }
-      .textarea { resize: none !important; font-size: 16px !important; line-height: 1.6; } 
-
-      .btn-sound-light { border: none !important; background: transparent !important; padding: 0 !important; cursor: pointer; transition: transform 0.15s ease !important; outline: none; display: flex; align-items: center; justify-content: center;}
-      .btn-sound-light:active { transform: scale(0.85) !important; }
-
-      /* ==========================================
-         【3. 圆角统一规范 (Design System)】
-         ========================================== */
-      .card, .modal__panel, .pause-box, .report-card-super { border-radius: 24px !important; }
-      .bubble, .heart-match-container, .quote-box, .modal-mic-container, .super-tip-box { border-radius: 20px !important; }
-      .btn--read, .super-btn, #modalCancel, #modalSubmit { border-radius: 16px !important; }
-      .typing-indicator { border-radius: 32px !important; } 
-      .composer__row .input, .composer__row .btn--primary { border-radius: 32px !important; }
-      .avatar, .btn--mic, .btn-sound, #modalClose { border-radius: 50% !important; }
-
-      /* ==========================================
-         【4. 布局基础优化】
-         ========================================== */
-      #screenHome.screen--active { display: flex; flex-direction: column; justify-content: center; }
-      .btn { white-space: nowrap !important; transition: transform 0.15s ease !important; }
-      .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; }
-      .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
-      .hero__image { width: 100%; max-width: 360px; height: auto; border-radius: 20px; }
-
-      .brand { display: flex; align-items: center; gap: 12px; }
-      .brand__logo { width: 48px; height: 48px; object-fit: contain; } 
-      .brand__title { font-size: 20px; font-weight: 900; }
-      
-      .topbar__right { display: flex; align-items: center; gap: 12px; }
-      .chip { display: flex; align-items: center; height: 36px; padding: 0 16px; box-sizing: border-box; margin: 0; font-weight: 700; font-size: 14px;}
-      #btnReset { display: flex; align-items: center; height: 36px; padding: 0 16px; box-sizing: border-box; margin: 0; font-weight: 700; font-size: 14px; }
-
-      /* ==========================================
-         【5. 全屏加载与和好动画 (3D闪星星)】
-         ========================================== */
-      .modal.loadingOverlay { position: fixed; inset: 0; z-index: 10001; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; border: none !important; }
-      .modal.loadingOverlay[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
-      .magic-spinner { font-size: 80px; animation: magicWand 2.5s infinite linear; margin-bottom: 24px; line-height: 1; display: flex; align-items: center; justify-content: center;}
-      .loading-text { font-size: 18px; font-weight: 700; color: #D97706; text-align: center; }
-      @keyframes magicWand { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
-
-      #celebrationOverlay { position: fixed; inset: 0; z-index: 9999; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-      #celebrationOverlay.show { opacity: 1; pointer-events: auto; }
-      @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
-      @keyframes floatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-      .celeb-icon { color: #F43F5E; animation: popIn 0.6s ease forwards, floatBounce 2s ease-in-out infinite 0.6s; display: flex; align-items: center; justify-content: center;}
-      .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
-
-      /* ==========================================
-         【6. 按钮专属色彩与交互】
-         ========================================== */
-      .btn--read { background-color: #93C5FD; padding: 8px 16px; font-size: 14px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; }
-      .btn--read:hover { background-color: #BFDBFE; }
-      .btn--read.playing { background-color: #FDE047; }
-
-      .btn--mic { width: 64px !important; height: 64px !important; background: #FDE047 !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0 !important; }
-      .btn--mic:hover { background: #FEF08A !important; }
-      .btn--mic.recording { background: #EF4444 !important; color: white !important; animation: micPulse 0.8s infinite alternate !important; border-color: #991B1B !important; }
-      @keyframes micPulse { 0% { transform: scale(1); background-color: #EF4444; } 100% { transform: scale(1.08); background-color: #DC2626; } }
-
-      .composer__row { display: flex; gap: 12px; align-items: center; width: 100%; margin-top: 5px; }
-      .composer__row .input { flex: 1; height: 64px !important; font-size: 16px !important; padding: 0 24px; font-weight: 600; }
-      .composer__row .btn--primary { flex-shrink: 0; height: 64px !important; font-size: 18px !important; font-weight: 900 !important; padding: 0 32px !important; }
-
-      .btn-sound { background: rgba(255,255,255,0.8); width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-      .btn-sound:hover { background: #FFFFFF; }
-      .btn-sound.playing { background: #FDE047; }
-
-      /* ==========================================
-         【7. 情境卡片排版】
-         ========================================== */
+      /* 精简排版 */
       .contextCard { padding: 16px 0 !important; background: #FFFFFF !important; }
-      .contextCard .card__title { padding: 0 24px 12px 24px !important; border-bottom: none !important; background: transparent !important; }
-      .contextCard .story { border: 2px dashed #CBD5E1 !important; border-radius: 16px !important; padding: 16px 24px !important; margin: 0 16px 16px 16px !important; font-size: 16px !important; font-weight: 600 !important; line-height: 1.8 !important; color: #334155 !important; background: transparent !important; }
-      .contextCard .systemNotice { background: #FEF9C3 !important; border: 2px dashed #F59E0B !important; color: #B45309 !important; padding: 12px 16px !important; border-radius: 16px !important; font-weight: 700 !important; font-size: 15px !important; margin: 0 16px !important; box-shadow: none !important; }
+      .contextCard .card__title { padding: 0 24px 12px 24px !important; }
+      .contextCard .story { border: 2px dashed #CBD5E1 !important; border-radius: 16px !important; padding: 16px 24px !important; margin: 0 16px 16px 16px !important; font-size: 16px !important; font-weight: 600 !important; line-height: 1.8 !important; color: #334155 !important; }
+      .contextCard .systemNotice { background: #FEF9C3 !important; border: 2px dashed #F59E0B !important; color: #B45309 !important; padding: 12px 16px !important; border-radius: 16px !important; font-weight: 700 !important; font-size: 15px !important; margin: 0 16px !important; }
 
-      /* ==========================================
-         【8. 强迫症修复：紧凑的聊天区与输入框】
-         大幅压缩底部多余间距，防止把输入框挤下去
-         ========================================== */
-      .chatCard .chat { 
-          padding: 20px 24px 4px 24px !important; /* 核心：底部内边距压缩到极限 4px */
-          background: #FFFFFF !important; 
-      }
-      
-      .typing-indicator-wrapper {
-          display: flex; 
-          justify-content: center; 
-          width: 100%; 
-          padding: 0 0 12px 0 !important; /* 核心：去掉顶部所有多余边距，仅保留底部少量缝隙 */
-          background: transparent !important;
-      }
-      .typing-indicator { 
-          display: none; 
-          padding: 6px 16px 6px 8px !important; 
-          background: #FEF3C7 !important; 
-          color: #B45309 !important; 
-          align-items: center; 
-          gap: 8px !important; 
-          width: fit-content; 
-          font-size: 14px;
-          margin: 0 !important; 
-      }
+      /* 思考胶囊优化 */
+      .typing-indicator-wrapper { display: flex; justify-content: center; width: 100%; padding: 16px 0 !important; }
+      .typing-indicator { display: none; padding: 8px 16px; background: #FEF3C7 !important; color: #B45309 !important; align-items: center; gap: 8px; width: fit-content; border-radius: 32px !important; font-weight: 700; font-size: 14px; margin: 0 !important; }
       .typing-indicator.active { display: flex; }
-      .dots { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px;}
-      .dots span { display: block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
-      .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
-      /* ==========================================
-         【9. 各大弹窗排版】
-         ========================================== */
-      #modal .modal__panel { padding: 0 !important; background: #F8FAFC !important; overflow: hidden; max-width: 500px !important; }
-      #modal .modal__header { background: #6EE7B7 !important; padding: 16px 24px !important; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1E293B !important; }
-      #modal .modal__title { font-weight: 900 !important; font-size: 20px !important; }
-      #modal .modal__body { padding: 24px !important; }
-      #modal .modal__footer { padding: 0 24px 24px !important; border-top: none !important; display: flex; gap: 12px; justify-content: flex-end; }
-      
-      #modalClose { background: #FDA4AF !important; width: 32px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer; border: 3px solid #1E293B !important;}
-      #modalCancel { background: #FDE047 !important; font-weight: 900 !important; padding: 10px 24px !important; font-size: 15px;}
-      #modalSubmit { background: #6EE7B7 !important; color: #064E3B !important; font-weight: 900 !important; padding: 10px 24px !important; font-size: 15px;}
+      /* 聊天气泡 */
+      .msg { width: 100% !important; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+      .msg--right { flex-direction: row-reverse; }
+      .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; }
+      .bubble { padding: 12px 16px; border-radius: 20px !important; font-size: 16px; font-weight: 600; line-height: 1.6; max-width: 75%; }
+      .btn-sound { background: #E2E8F0; width: 36px; height: 36px; border-radius: 50%; border: 3px solid #1E293B !important; }
 
-      .quote-box { background: #FEE2E2; padding: 12px; margin: 12px 0; color: #991B1B !important; font-weight: 700; font-size: 15px; text-align: left; }
-      .modal-mic-container { border-style: dashed !important; background: white !important; padding: 20px 0; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; }
-      .mic-text-hint { font-size: 16px; font-weight: 900; margin-top: 15px; }
-
-      #waitRephraseOverlay { background: rgba(255, 255, 255, 0.95); z-index: 9900; }
-      .pause-box { background: #EFF6FF !important; padding: 40px !important; text-align: center; max-width: 500px; }
-      .pause-box h2 { color: #1E3A8A !important; font-size: 24px; font-weight: 900; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-      .pause-box p { font-size: 16px; line-height: 1.6; margin-bottom: 20px; font-weight: 600; }
-
-      .report-card-super { background: #BFDBFE !important; padding: 30px !important; text-align: center; max-width: 600px; margin: 0 16px;}
-      .report-card-super h2 { color: #1E3A8A !important; font-size: 28px; font-weight: 900; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-      .report-card-super p { font-size: 16px; color: #1E40AF !important; margin-bottom: 20px; font-weight: 900; }
-      .super-tip-box { background: white !important; padding: 15px !important; margin: 15px 0 !important; font-size: 15px; text-align: left; line-height: 1.6; font-weight: 600;}
-      .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
-      .super-btn { padding: 12px 24px; font-weight: 900; font-size: 16px; cursor: pointer; }
-      .super-btn-ghost { background: white; color: #1E293B; }
-      .super-btn-primary { background: #818CF8; color: #1E293B; }
-
-      /* ==========================================
-         【10. 聊天气泡对齐】
-         ========================================== */
-      .msg-container { display: flex; align-items: center; gap: 8px; max-width: 100%; }
-      .msg--right .msg-container { flex-direction: row-reverse; }
-
-      .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: center !important; margin-bottom: 12px; gap: 12px;}
-      .msg--right { flex-direction: row-reverse !important; }
-      .avatar { flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 900; border: 3px solid #1E293B !important;}
-      .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; }
-      .avatar--a { background: #FEE2E2 !important; color: #991B1B !important; }
-      .avatar--b { background: #DBEAFE !important; color: #1E3A8A !important; }
-      .msg-content-wrap { display: flex; flex-direction: column; max-width: 80%; }
-      .msg:not(.msg--right) .msg-content-wrap { align-items: flex-start; }
-      .msg--right .msg-content-wrap { align-items: flex-end; }
-      .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; padding: 12px 16px; font-size: 16px; font-weight: 600; line-height: 1.6;}
-      
-      .heart-match-container { padding: 24px 32px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; transition: all 0.3s ease; border: 3px solid #1E293B !important;}
-      .heart-track { position: relative; height: 48px; margin: 20px 0 36px 0; }
-      .heart { position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; display: flex; align-items: center; justify-content: center;}
-      .match-text { font-size: 40px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
-      .match-subtext { font-size: 16px; font-weight: 700; margin-bottom: 24px; }
+      /* 匹配度气泡 (不再撑满全屏) */
+      .heart-match-container { 
+          max-width: 85%; 
+          margin: 10px auto; 
+          padding: 20px; 
+          border-radius: 20px !important; 
+          background: #FFFBEB; 
+      }
     </style>
   </head>
   <body>
@@ -225,612 +58,43 @@
         <div class="loading-text">法官精灵正在为你编织故事剧本，请稍等...</div>
     </div>
 
-    <div id="celebrationOverlay">
-        <div class="celeb-icon"><i class="ph-bold ph-handshake"></i></div>
-        <div class="celeb-text">心心相印！太棒了，误会解除啦！</div>
-    </div>
-
-    <div class="modal loadingOverlay" id="waitRephraseOverlay" aria-hidden="true">
-        <div class="pause-box">
-            <h2>
-                <i class="ph-bold ph-pause-circle" style="font-size: 60px !important; color: #3B82F6; animation: floatBounce 2s infinite;"></i>
-                我们先暂停一下
-            </h2>
-            <p>
-                生气的话就像小火苗，吵架会让火越来越大哦！<i class="ph-bold ph-fire" style="color: #EA580C;"></i><br><br>
-                对方现在正在法官精灵的帮助下，重新组织语言。<br>
-                我们耐心等等看，换一种温柔的说法，是不是更能解决问题呢？
-            </p>
-            <div style="color: #2563EB !important; font-weight: 900; display:flex; align-items:center; justify-content:center; gap: 8px;">
-                <i class="ph-bold ph-spinner-gap" style="animation: spin 1s linear infinite;"></i> 等待对方重新发送消息...
-            </div>
-        </div>
-    </div>
-
-    <div class="app">
-      <header class="topbar">
-        <div class="brand">
-          <img class="brand__logo" src="/static/img/logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/48?text=图'" />
-          <div class="brand__text">
-            <div class="brand__title">儿童社交冲突调节平台</div>
-          </div>
-        </div>
-        <div class="topbar__right">
-          <div class="chip" id="chipRole">未选择身份</div>
-          <button class="btn btn--ghost" id="btnReset" type="button"><i class="ph-bold ph-sign-out"></i> 退出</button>
-        </div>
-      </header>
-
-      <main class="main">
-        <section class="screen screen--active" id="screenHome" aria-label="首页">
-          <div class="card hero">
-            <div class="hero__left">
-              <h1 class="hero__title">请先选择你的身份</h1>
-              <p class="hero__desc">建议打开两个标签页（或两台设备）：一个选 <strong>身份A</strong>，另一个选 <strong>身份B</strong>，它们会在同一“会话码”里联动同步。</p>
-
-              <div class="session">
-                <label class="field">
-                  <span class="field__label">会话码（用于两端联动）</span>
-                  <div class="field__row" style="display: flex; gap: 8px;">
-                    <input class="input" id="sessionCode" autocomplete="off" spellcheck="false" />
-                    <button class="btn btn--ghost" id="btnNewSession" type="button"><i class="ph-bold ph-dice-three"></i> 随机生成</button>
-                  </div>
-                </label>
-              </div>
-
-              <div class="actions">
-                <button class="btn btn--primary" id="btnChooseA" type="button">选择身份 A（先发言）</button>
-                <button class="btn btn--secondary" id="btnChooseB" type="button">选择身份 B（等待）</button>
-              </div>
-            </div>
-
-            <div class="hero__right" aria-hidden="true">
-              <div class="hero__image-container">
-                <img src="/static/img/story_illustration.png" class="hero__image" alt="沟通与理解儿童插画" onerror="this.src='https://via.placeholder.com/360x360.png?text=请将图片放入img文件夹'" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="screen" id="screenChat" aria-label="对话页">
-          <div class="layout layout--stack">
-            <section class="content content--stack">
-              <div class="card contextCard">
-                <div class="card__title" style="display:flex; justify-content:space-between; align-items:center;">
-                   <span style="display:flex; align-items:center;"><i class="ph-bold ph-book-open-text"></i> 本次情境</span>
-                   <button class="btn--read" onclick="window.speakText(document.getElementById('storyText').innerText, this)" title="朗读/暂停"><i class="ph-bold ph-speaker-high"></i> 读给我听</button>
-                </div>
-                <div class="story" id="storyText"></div>
-                <div class="systemNotice" id="systemNotice"></div>
-              </div>
-
-              <div class="card chatCard">
-                <div class="chatHeader">
-                  <div class="chatHeader__left">
-                    <div class="chatHeader__title">对话区</div>
-                    <div class="chatHeader__meta" id="chatMeta">会话未连接</div>
-                  </div>
-                  <div class="chatHeader__right">
-                    <div class="presence" id="presence">
-                      <span class="presence__dot"></span>
-                      <span class="presence__text">对方未就绪</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="chat" id="chatLog" aria-live="polite"></div>
-
-                <div class="typing-indicator-wrapper">
-                    <div class="typing-indicator" id="typingIndicator">
-                       <div class="avatar avatar--j" style="width: 28px; height: 28px; min-width: 28px; border: 2px solid #1E293B !important;">
-                           <i class="ph-bold ph-robot" style="color: #064E3B !important; font-size: 16px !important;"></i>
-                       </div>
-                       <div style="display: flex; align-items: center; font-weight: 700; font-size: 14px;">
-                           法官精灵正在思考... 
-                           <div class="dots" style="margin-left: 4px;"><span></span><span></span><span></span></div>
-                       </div>
-                    </div>
-                </div>
-
-                <div class="composer">
-                  <div id="negotiateActions" style="display: none; padding-bottom: 12px; text-align: center;">
-                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: #A7F3D0; color: #064E3B !important; width: 100%; font-weight: 900;"><i class="ph-bold ph-handshake"></i> 我们商量好了 (点击拉钩)</button>
-                  </div>
-                  <div class="composer__row">
-                    <button class="btn btn--mic" id="btnMicChat" title="点击麦克风直接说话"><i class="ph-bold ph-microphone"></i></button>
-                    <input class="input input--big" id="composerInput" placeholder="点左边麦克风说话，或在这打字…" autocomplete="off" />
-                    <button class="btn btn--primary" id="btnSend" type="button">发送</button>
-                  </div>
-                  <div class="composer__sub" id="composerSub"></div>
-                </div>
-              </div>
-              <div style="height: 40px; flex: none;"></div>
-            </section>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true">
-      <div class="modal__backdrop" data-close="true"></div>
-      <div class="modal__panel" role="document">
-        <div class="modal__header">
-          <div class="modal__title" id="modalTitle">标题</div>
-          <button class="iconBtn" id="modalClose" type="button" aria-label="关闭"><i class="ph-bold ph-x"></i></button>
-        </div>
-        <div class="modal__body">
-          <div class="modal__desc" id="modalDesc" style="margin-bottom: 12px;"></div>
-          
-          <div class="modal-mic-container">
-              <button class="btn btn--mic" id="btnMicModal" title="点击麦克风直接说话"><i class="ph-bold ph-microphone"></i></button>
-              <div class="mic-text-hint" id="modalMicHint">点击麦克风，直接说出你的想法</div>
-          </div>
-
-          <label class="field">
-            <span class="field__label" style="font-weight: 600;">如果不想说话，也可以在这里打字：</span>
-            <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 8px;">
-              <textarea class="textarea" id="modalText" rows="2" placeholder="输入你想说的话..."></textarea>
-            </div>
-          </label>
-        </div>
-        <div class="modal__footer">
-          <button class="btn btn--ghost" id="modalCancel" type="button">稍后</button>
-          <button class="btn btn--primary" id="modalSubmit" type="button"><i class="ph-bold ph-paper-plane-tilt"></i> 提交我的想法</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal" id="finishModal" aria-hidden="true" role="dialog" aria-modal="true" style="z-index: 10000;">
-      <div class="modal__backdrop"></div>
-      <div class="modal__panel" role="document" style="background: transparent !important; border: none !important;">
-        <div class="report-card-super">
-          <h2><i class="ph-bold ph-trophy" style="color: #D97706 !important;"></i> 调解大成功！</h2>
-          <p>这是法官精灵为你们颁发的专属《成长报告》</p>
-
-          <div class="super-tip-box">
-            <strong style="color: #047857 !important;"><i class="ph-bold ph-sparkle"></i> 闪光点：</strong><br>
-            <span id="finalPraise">解析中...</span>
-          </div>
-
-          <div class="super-tip-box">
-            <strong style="color: #1D4ED8 !important;"><i class="ph-bold ph-plant"></i> 你们的成长：</strong><br>
-            <span id="finalGrowth">解析中...</span>
-          </div>
-
-          <div class="super-tip-box">
-            <strong style="color: #A16207 !important;"><i class="ph-bold ph-lightbulb"></i> 精灵小贴士：</strong><br>
-            <span id="finalTip">解析中...</span>
-          </div>
-
-          <div class="super-btn-group">
-              <button class="super-btn super-btn-ghost" id="btnReviewChat"><i class="ph-bold ph-chat-centered-text"></i> 复盘聊天</button>
-              <button class="super-btn super-btn-primary" id="btnReturnHome"><i class="ph-bold ph-arrow-counter-clockwise"></i> 再玩一次</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script>
-      (() => {
-        const $ = (id) => document.getElementById(id);
-
-        const screenHome = $("screenHome");
-        const screenChat = $("screenChat");
-        const chipRole = $("chipRole");
-        const btnReset = $("btnReset");
-
-        const sessionCodeInput = $("sessionCode");
-        const btnNewSession = $("btnNewSession");
-        const btnChooseA = $("btnChooseA");
-        const btnChooseB = $("btnChooseB");
-
-        const storyText = $("storyText");
-        const systemNotice = $("systemNotice");
-        const chatMeta = $("chatMeta");
-        const presence = $("presence");
-        const chatLog = $("chatLog");
-        const composerInput = $("composerInput");
-        const btnSend = $("btnSend");
-        const composerSub = $("composerSub");
-
-        const negotiateActions = $("negotiateActions");
-        const btnAgree = $("btnAgree");
-        const finishModal = $("finishModal");
-        const btnReviewChat = $("btnReviewChat");
-        const btnReturnHome = $("btnReturnHome");
-
-        const modal = $("modal");
-        const modalClose = $("modalClose");
-        const modalCancel = $("modalCancel");
-        const modalSubmit = $("modalSubmit");
-        const modalTitle = $("modalTitle");
-        const modalDesc = $("modalDesc");
-        const modalText = $("modalText");
-
-        const globalLoading = $("globalLoading");
-
-        const appState = { code: "", role: null };
-        let syncInterval = null;
-        let currentSessionData = null;
+        // ... 省略其他逻辑 ...
         
-        // 核心修复：自动转换中文字符双引号
-        function toChineseQuotes(str) {
-            if (!str) return str;
-            return str.replace(/['‘]([^'‘’]+?)['’]/g, "“$1”");
-        }
-
-        // 语音引擎
-        let preferredVoice = null;
-        function loadVoices() {
-            const voices = speechSynthesis.getVoices();
-            if (!voices.length) return;
-            const cnVoices = voices.filter(v => v.lang.toLowerCase().includes('zh') && !v.lang.toLowerCase().includes('hk') && !v.lang.toLowerCase().includes('tw') && !v.name.toLowerCase().includes('cantonese') && !v.name.toLowerCase().includes('sin-ji'));
-            if (!cnVoices.length) return;
-            const getScore = (voice) => { let name = voice.name.toLowerCase(); if (name.includes('xiaoxiao')) return 100; if (name.includes('natural')) return 90; if (name.includes('google')) return 80; if (name.includes('huihui')) return 60; return 0; };
-            cnVoices.sort((a, b) => getScore(b) - getScore(a));
-            preferredVoice = cnVoices[0];
-        }
-        if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = loadVoices; }
-        setTimeout(loadVoices, 100);
-
-        window.currentSpeakingBtn = null;
-        window.speakText = (text, btnElement) => {
-            if (!('speechSynthesis' in window)) return alert("你的浏览器不支持语音朗读哦~");
-            
-            if (speechSynthesis.speaking && window.currentSpeakingBtn === btnElement) { 
-                speechSynthesis.cancel(); 
-                if(btnElement) { 
-                    btnElement.innerHTML = btnElement.dataset.origText || '<i class="ph-bold ph-speaker-high"></i> 读给我听'; 
-                    btnElement.classList.remove('playing'); 
-                } 
-                window.currentSpeakingBtn = null; 
-                return; 
-            }
-            
-            speechSynthesis.cancel(); 
-            if (window.currentSpeakingBtn) { 
-                window.currentSpeakingBtn.innerHTML = window.currentSpeakingBtn.dataset.origText || '<i class="ph-bold ph-speaker-high"></i> 读给我听'; 
-                window.currentSpeakingBtn.classList.remove('playing'); 
-            }
-            
-            const utterance = new SpeechSynthesisUtterance(text); 
-            utterance.lang = 'zh-CN'; 
-            if (preferredVoice) utterance.voice = preferredVoice; 
-            utterance.rate = 0.9; 
-            utterance.pitch = 1.1;
-            
-            utterance.onend = utterance.onerror = () => { 
-                if(btnElement) { 
-                    btnElement.innerHTML = btnElement.dataset.origText || '<i class="ph-bold ph-speaker-high"></i> 读给我听'; 
-                    btnElement.classList.remove('playing'); 
-                } 
-                window.currentSpeakingBtn = null; 
-            };
-            
-            speechSynthesis.speak(utterance);
-            
-            if(btnElement) { 
-                if (!btnElement.dataset.origText) btnElement.dataset.origText = btnElement.innerHTML; 
-                
-                if (btnElement.classList.contains('btn-sound-light')) {
-                    btnElement.innerHTML = `<i class="ph-fill ph-pause-circle" style="font-size:28px; color:#D97706;"></i>`;
-                } else if (btnElement.classList.contains('btn-sound')) {
-                    btnElement.innerHTML = '<i class="ph-bold ph-pause"></i>';
-                } else {
-                    btnElement.innerHTML = '<i class="ph-bold ph-pause"></i> 正在朗读...';
-                }
-                
-                btnElement.classList.add('playing'); 
-                window.currentSpeakingBtn = btnElement; 
-            }
-        };
-
-        const setupSpeechRecognition = (btnId, inputId, isModal = false) => {
-            const btn = $(btnId); const input = $(inputId);
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { btn.style.display = 'none'; return; }
-
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'zh-CN';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            let isRecording = false;
-            let originalValue = "";
-
-            const stopRecordingUI = () => {
-                isRecording = false;
-                btn.classList.remove("recording");
-                input.placeholder = isModal ? "输入你想说的话..." : "点左边麦克风说话，或在这打字…";
-                if(isModal) $("modalMicHint").textContent = "点击麦克风，直接说出你的想法";
-                try { recognition.stop(); } catch(e) {}
-            };
-
-            const startRecording = () => {
-                isRecording = true;
-                btn.classList.add("recording");
-                originalValue = input.value; 
-                input.placeholder = "正在倾听你的声音... (说完点麦克风结束)";
-                if(isModal) $("modalMicHint").textContent = "正在倾听... (说完再次点击结束)";
-                try { recognition.start(); } catch(e) {}
-            };
-
-            recognition.onresult = (event) => {
-                let interim = "";
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    interim += event.results[i][0].transcript;
-                }
-                input.value = originalValue + interim; 
-            };
-
-            recognition.onerror = (event) => {
-                console.error("语音识别错误:", event.error);
-                if(event.error === 'not-allowed') {
-                    input.placeholder = "⚠️ 麦克风受限";
-                    alert("【麦克风权限被拦截！】\n请检查浏览器地址栏左侧是否允许了麦克风。");
-                }
-                stopRecordingUI();
-            };
-
-            recognition.onend = () => { stopRecordingUI(); };
-
-            btn.onclick = (e) => {
-                e.preventDefault();
-                if (isRecording) { stopRecordingUI(); } else { startRecording(); }
-            };
-        };
-
-        setupSpeechRecognition('btnMicChat', 'composerInput', false);
-        setupSpeechRecognition('btnMicModal', 'modalText', true);
-
-        function randomCode() { const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let out = ""; for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)]; return out; }
-        function setActiveScreen(which) { screenHome.classList.remove("screen--active"); screenChat.classList.remove("screen--active"); if (which === "home") screenHome.classList.add("screen--active"); if (which === "chat") screenChat.classList.add("screen--active"); }
-        function setRoleChip(role) { if (!role) { chipRole.textContent = "未选择身份"; chipRole.style.opacity = "0.9"; return; } chipRole.textContent = `当前身份：${role}`; chipRole.style.opacity = "1"; }
-        function setPresence(ready, text) { presence.dataset.ready = ready ? "true" : "false"; presence.querySelector(".presence__text").textContent = text; presence.querySelector(".presence__dot").style.background = ready ? "var(--good)" : "#94A3B8"; }
-        function escapeHtml(s) { return String(s).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;").replaceAll("\n", " "); }
-
         function renderHeartCard(result) {
             if (!result) return "";
             const score = Math.max(0, Math.min(100, Math.round(result.misinterpretation * 100))); 
             const matchPercent = 100 - score; 
             
-            let theme = {}; let title = "";
-            if (matchPercent > 70) { title = "太棒了，你们的心贴得很近！"; theme = { bg: '#F0FDF4', text: '#047857', lightText: '#065F46', track: '#34D399' }; }
-            else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#FFFBEB', text: '#B45309', lightText: '#D97706', track: '#FBBF24' }; }
-            else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', text: '#B91C1C', lightText: '#DC2626', track: '#F87171' }; }
-
+            let theme = { bg: '#FFFBEB', text: '#B45309', track: '#FBBF24' };
             const pos = (matchPercent / 100) * 40;
-            
-            // 修复：喇叭完美放在框体外部，且使用纯正中文双引号
+
             const guidanceText = result.guidance ? toChineseQuotes(result.guidance) : '';
             const comfortText = result.comfort ? toChineseQuotes(result.comfort) : '';
 
-            const guidance = guidanceText ? `
-              <div style="display:flex; align-items:center; gap:12px; margin-bottom: 8px; width: 100%;">
-                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 16px; border: 3px solid #1E293B; text-align: left; font-size: 15px; font-weight: 600; color: #1E293B;">
-                    <strong style="color:${theme.text};">给你的悄悄话：</strong><br/>${escapeHtml(guidanceText)}
+            // 修复：喇叭移到右侧，排版紧凑
+            const buildAdvice = (label, text) => text ? `
+              <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                <div style="flex:1; background: white; padding: 10px 14px; border-radius: 12px; border: 2px solid #E2E8F0; text-align: left; font-size: 14px; font-weight: 600;">
+                    <span style="color:${theme.text};">${label}</span><br/>${escapeHtml(text)}
                 </div>
-                <button class="btn-sound" style="flex-shrink: 0;" onclick="window.speakText('${escapeHtml(guidanceText)}', this)" title="朗读悄悄话"><i class="ph-bold ph-speaker-high"></i></button>
-              </div>` : '';
-
-            const comfort = comfortText ? `
-              <div style="display:flex; align-items:center; gap:12px; margin-bottom: 8px; width: 100%;">
-                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 16px; border: 3px solid #1E293B; text-align: left; font-size: 15px; font-weight: 600; color: #1E293B;">
-                    <strong style="color:${theme.text};">给对方的安抚：</strong><br/>${escapeHtml(comfortText)}
-                </div>
-                <button class="btn-sound" style="flex-shrink: 0;" onclick="window.speakText('${escapeHtml(comfortText)}', this)" title="朗读安抚"><i class="ph-bold ph-speaker-high"></i></button>
+                <button class="btn-sound" onclick="window.speakText('${escapeHtml(text)}', this)"><i class="ph-bold ph-speaker-high"></i></button>
               </div>` : '';
 
             return `
-              <div class="heart-match-container" style="background-color: ${theme.bg}; border-radius: 20px !important;">
-                <div style="font-size:16px; color:${theme.text}; margin-bottom:24px; font-weight:900; display:flex; align-items:center; justify-content:center;"><i class="ph-fill ph-heart-straight"></i> 想法匹配度检测完成</div>
-                
-                <div class="heart-track" style="position:relative; height:48px; margin: 10px 10px 30px 10px;">
-                    <div style="position:absolute; top:50%; left:0; right:0; height:12px; background: white; border: 3px solid #1E293B; border-radius: 6px; transform: translateY(-50%); box-sizing:border-box;"></div>
-                    <div style="position:absolute; top:50%; left:0; width:calc(${pos}% + 12px); height:12px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 6px 0 0 6px; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
-                    <div style="position:absolute; top:50%; right:0; width:calc(${pos}% + 12px); height:12px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 0 6px 6px 0; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
-                    
-                    <div class="heart heart-left" style="left: ${pos}%; top:50%; transform:translate(-50%, -50%); width: 44px; height: 44px; background: #DBEAFE; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #1E3A8A; font-weight:900; font-size:18px; z-index:2;">A</div>
-                    <div class="heart heart-right" style="right: ${pos}%; top:50%; transform:translate(50%, -50%); width: 44px; height: 44px; background: #FEE2E2; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #991B1B; font-weight:900; font-size:18px; z-index:2;">B</div>
+              <div class="heart-match-container">
+                <div style="font-size:15px; font-weight:900; margin-bottom:15px; display:flex; align-items:center; justify-content:center;"><i class="ph-fill ph-heart-straight"></i> 想法匹配度: ${matchPercent}%</div>
+                <div class="heart-track" style="height:32px;">
+                    <div style="position:absolute; top:50%; left:0; right:0; height:8px; background: white; border: 3px solid #1E293B; border-radius: 4px; transform: translateY(-50%);"></div>
+                    <div style="position:absolute; top:50%; left:0; width:calc(${pos}% + 6px); height:8px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 4px 0 0 4px; transform: translateY(-50%);"></div>
+                    <div class="heart" style="left: ${pos}%; top:50%; width: 32px; height: 32px; background: #DBEAFE; border: 3px solid #1E293B; border-radius: 50%; font-weight:900;">A</div>
+                    <div class="heart" style="right: ${pos}%; top:50%; width: 32px; height: 32px; background: #FEE2E2; border: 3px solid #1E293B; border-radius: 50%; font-weight:900;">B</div>
                 </div>
-
-                <div class="match-text" style="color:${theme.text}; font-size:40px; line-height:1; font-weight:900;">${matchPercent}%</div>
-                <div class="match-subtext" style="color: ${theme.lightText}; margin-bottom:24px; font-size:16px;">${title}</div>
-                
-                <div style="text-align:left; font-size: 15px; color: #1E293B; line-height:1.6;">
-                    ${appState.role === result.triggeredBy ? guidance : comfort}
-                </div>
+                ${appState.role === result.triggeredBy ? buildAdvice('给你的悄悄话：', guidanceText) : buildAdvice('给对方的安抚：', comfortText)}
               </div>
             `;
         }
-
-        function pushMsg({ from, text, kind = "chat", extra = null }) {
-          const isSelf = from === appState.role;
-          const displayFrom = (kind === "system" || from === "J" || from === "system") ? "J" : from;
-
-          const row = document.createElement("div");
-          row.className = "msg" + (isSelf && displayFrom !== "J" ? " msg--right" : "");
-
-          const avatar = document.createElement("div");
-          avatar.className = "avatar " + (displayFrom === "A" ? "avatar--a" : displayFrom === "B" ? "avatar--b" : "avatar--j");
-          
-          if(displayFrom === "J") {
-              avatar.innerHTML = `<i class="ph-bold ph-robot" style="color: #064E3B !important;"></i>`;
-          } else {
-              avatar.innerHTML = `<span style="display: block; color: #1E293B !important; font-weight: 900 !important; font-size: 16px !important;">${displayFrom}</span>`;
-          }
-
-          const contentWrap = document.createElement("div");
-          contentWrap.className = "msg-content-wrap";
-
-          if (kind === "judgeCard") {
-            contentWrap.innerHTML = renderHeartCard(extra);
-          } else {
-            const bubbleClass = displayFrom === "A" ? "bubble--a" : displayFrom === "B" ? "bubble--b" : "bubble--j";
-            const safeText = kind === "system" ? text : escapeHtml(text);
-            contentWrap.innerHTML = `
-                <div class="msg-container">
-                    <div class="bubble ${bubbleClass}">
-                        <div style="text-align: left; line-height: 1.6;">${safeText}</div>
-                    </div>
-                    <button class="btn-sound" onclick="window.speakText('${escapeHtml(text)}', this)" title="朗读/暂停"><i class="ph-bold ph-speaker-high"></i></button>
-                </div>`;
-          }
-
-          row.appendChild(avatar);
-          row.appendChild(contentWrap);
-          chatLog.appendChild(row);
-          chatLog.scrollTop = chatLog.scrollHeight;
-        }
-
-        function renderSession(session) {
-          if (!session) return;
-          if (session.scenario && globalLoading.getAttribute("aria-hidden") === "false") { globalLoading.setAttribute("aria-hidden", "true"); setActiveScreen("chat"); }
-          const ready = session.participants.A && session.participants.B; setPresence(ready, ready ? "对方已加入" : "等待对方加入...");
-          if (session.scenario) { 
-              storyText.textContent = appState.role === "A" ? session.scenario.storyA : session.scenario.storyB; 
-              
-              let noticeText = appState.role === "A" 
-                  ? "你现在心里有点着急，请由你先发言吧。" 
-                  : "对方现在心里有点着急，请耐心等待对方（A）先开场吧。";
-                  
-              systemNotice.innerHTML = `<div style="display:flex; align-items:center; gap:6px;"><i class="ph-bold ph-lightbulb" style="font-size:20px; color:#D97706;"></i> <span>法官精灵小提示：${noticeText}</span></div>`; 
-              
-              $("chatMeta").textContent = `会话码：${session.code} · 情境：${session.scenario.title}`; 
-          }
-
-          chatLog.innerHTML = "";
-          for (const item of session.chat) {
-              if (item.target && item.target !== appState.role) continue;
-              if (item.kind === "judgeCard") { pushMsg({ from: "J", text: "", kind: "judgeCard", extra: item.extra }); }
-              else if (item.kind === "system") { pushMsg({ from: "J", text: item.text, kind: "system", meta: item.meta || "" }); }
-              else { pushMsg({ from: item.from, text: item.text, kind: item.kind, extra: item.extra }); }
-          }
-
-          const frozen = session.freeze.active; const phase = session.freeze.phase; const aHasSpoken = session.chat.filter(m => m.from === "A").length > 0;
-          const disabled = !ready || frozen || phase === "finished" || (appState.role === "B" && !aHasSpoken && phase === "idle") || !session.scenario;
-          btnSend.disabled = disabled; composerInput.disabled = disabled; $("btnMicChat").disabled = disabled;
-          negotiateActions.style.display = (phase === "negotiate" && !session.agreed[appState.role]) ? "block" : "none";
-          $("typingIndicator").classList.toggle("active", frozen && session.freeze.aMotivation && session.freeze.bGuess && !session.freeze.result);
-
-          if (!ready) { composerSub.textContent = "等待对方加入..."; }
-          else if (!session.scenario) { composerSub.textContent = "精灵正在编织剧本，请稍候..."; }
-          else if (frozen && phase === "collecting") {
-              composerSub.textContent = "对话已暂停，请在弹窗中说出你的想法。";
-              if (modal.getAttribute("aria-hidden") !== "false") {
-                  const triggeredByMe = session.freeze.triggeredBy === appState.role;
-                  const triggerTxt = session.freeze.triggerText || "刚才说的话";
-                  const blockquoteHtml = `<div class="quote-box">“${escapeHtml(triggerTxt)}”</div>`;
-
-                  if (triggeredByMe && !session.freeze.aMotivation) { 
-                      modalTitle.textContent = "刚才发火真实的出发点是？"; 
-                      modalDesc.innerHTML = `你刚才说：${blockquoteHtml}请点击麦克风说说，你刚才为什么那么着急？`; 
-                      modal.dataset.mode = "aMotivation"; 
-                      modal.setAttribute("aria-hidden", "false"); 
-                  }
-                  else if (!triggeredByMe && !session.freeze.bGuess) { 
-                      setTimeout(() => { 
-                          modalTitle.textContent = "你觉得对方为什么生气？"; 
-                          modalDesc.innerHTML = `对方刚才说：${blockquoteHtml}猜猜看，对方遇到了什么困难？点击麦克风说出来吧！`; 
-                          modal.dataset.mode = "bGuess"; 
-                          modal.setAttribute("aria-hidden", "false"); 
-                      }, 1000); 
-                  }
-              }
-          }
-          else if (phase === "rephrase") {
-              if (session.freeze.triggeredBy === appState.role) { 
-                  $("waitRephraseOverlay").setAttribute("aria-hidden", "true");
-                  composerSub.textContent = "请按照精灵的提示，重新好好说一句话吧！"; 
-              } else { 
-                  $("waitRephraseOverlay").setAttribute("aria-hidden", "false");
-                  composerSub.textContent = "等待对方重新整理语言中..."; 
-                  btnSend.disabled = true; composerInput.disabled = true; $("btnMicChat").disabled = true; 
-              }
-              if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; }
-          }
-          else if (phase === "negotiate") {
-              $("waitRephraseOverlay").setAttribute("aria-hidden", "true");
-              composerSub.textContent = "请继续和对方商量解决方案！商量好后点击上方【达成一致】！";
-              if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; }
-          }
-          else if (phase === "finished") {
-              $("waitRephraseOverlay").setAttribute("aria-hidden", "true");
-              if ($("celebrationOverlay").classList.contains("show") === false && finishModal.getAttribute("aria-hidden") === "true") {
-                  
-                  const finalReport = session.freeze.finalReport || {
-                      praise: "你们展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
-                      growth: "你们学会了“停下来想一想”，并勇敢说出了感受，这就是最大的成长！",
-                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用正确的话语来表达哦！"
-                  };
-                  $("finalPraise").textContent = finalReport.praise;
-                  $("finalGrowth").textContent = finalReport.growth;
-                  $("finalTip").textContent = finalReport.tip;
-
-                  const overlay = $("celebrationOverlay");
-                  overlay.classList.add("show");
-                  setTimeout(() => {
-                      overlay.classList.remove("show");
-                      setTimeout(() => { finishModal.setAttribute("aria-hidden", "false"); }, 500);
-                  }, 3000);
-              }
-          }
-          else { 
-              $("waitRephraseOverlay").setAttribute("aria-hidden", "true");
-              composerSub.textContent = ""; 
-              if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; } 
-          }
-        }
-
-        function startSync() {
-            if (syncInterval) clearInterval(syncInterval);
-            syncInterval = setInterval(async () => {
-                if (!appState.code) return;
-                try { const res = await fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({code: appState.code}) }); const data = await res.json(); if (JSON.stringify(data) !== JSON.stringify(currentSessionData)) { currentSessionData = data; renderSession(data); } } catch(e) {}
-            }, 2500); 
-        }
-
-        async function join(role) {
-          appState.code = (sessionCodeInput.value || randomCode()).trim().toUpperCase(); sessionCodeInput.value = appState.code; appState.role = role; setRoleChip(role);
-          try {
-              globalLoading.setAttribute("aria-hidden", "false");
-              await fetch('/api/join', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ code: appState.code, role }) });
-              startSync();
-          } catch (e) { globalLoading.setAttribute("aria-hidden", "true"); alert("网络错误"); }
-        }
-
-        // 核心交互体验修复：点击发送或提交后，自动平滑滚到底部，确保输入框永远可见
-        btnChooseA.onclick = () => join("A"); btnChooseB.onclick = () => join("B"); btnNewSession.onclick = () => sessionCodeInput.value = randomCode();
-        btnSend.onclick = async () => { 
-            const text = composerInput.value.trim(); if (!text) return; 
-            composerInput.value = ""; 
-            $("typingIndicator").classList.add("active"); 
-            setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 50);
-            await fetch('/api/send_message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text }) }); 
-        };
-        composerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (!btnSend.disabled) btnSend.click(); } });
-        
-        modalSubmit.onclick = async () => { 
-            const text = modalText.value.trim(); if (!text) return alert("要说点什么才能提交哦！"); 
-            modal.setAttribute("aria-hidden", "true"); modalText.value = ""; 
-            $("typingIndicator").classList.add("active"); 
-            setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 50);
-            await fetch('/api/submit_freeze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text, mode: modal.dataset.mode }) }); 
-        };
-        modalClose.onclick = modalCancel.onclick = () => { modal.setAttribute("aria-hidden", "true"); modalText.value=""; }
-        
-        btnAgree.onclick = async () => { 
-            btnAgree.disabled = true; 
-            btnAgree.style.background = "#E2E8F0"; 
-            btnAgree.style.color = "#475569";
-            btnAgree.style.transform = "scale(0.98)";
-            btnAgree.innerHTML = '<i class="ph-bold ph-spinner-gap" style="animation: spin 1s linear infinite;"></i> 正在写报告...'; 
-            await fetch('/api/agree', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role }) }); 
-        };
-
-        btnReviewChat.onclick = () => finishModal.setAttribute("aria-hidden", "true");
-        btnReturnHome.onclick = btnReset.onclick = () => location.reload();
-        sessionCodeInput.value = randomCode();
+        // ... 其余逻辑保持不变 ...
       })();
     </script>
   </body>
