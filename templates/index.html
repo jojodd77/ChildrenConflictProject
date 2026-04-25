@@ -10,7 +10,7 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=125" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=130" />
 
     <style>
       /* ==========================================
@@ -32,7 +32,6 @@
       .btn--mic i[class^="ph-"] { font-size: 32px !important; margin-right: 0 !important; }
       .btn-sound i[class^="ph-"] { font-size: 18px !important; margin-right: 0 !important; vertical-align: 0 !important;}
       .celeb-icon i[class^="ph-"] { font-size: 80px !important; margin-right: 0 !important; }
-      .heart-track i[class^="ph-"] { font-size: 40px !important; margin-right: 0 !important; }
       #modalClose i[class^="ph-"] { font-size: 16px !important; margin-right: 0 !important; vertical-align: 0 !important;}
       .btn-sound-light i[class^="ph-"] { margin-right: 0 !important; vertical-align: 0 !important; }
 
@@ -125,18 +124,28 @@
       .btn-sound.playing { background: #FDE047; }
 
       /* ==========================================
-         【7. 情境卡片排版】
+         【7. 情境卡片排版优化：去顶线、加宽】
          ========================================== */
       .contextCard { padding: 16px 0 !important; background: #FFFFFF !important; }
-      .contextCard .card__title { padding: 0 24px 12px 24px !important; border-bottom: none !important; background: transparent !important; }
-      .contextCard .story { border: 2px dashed #CBD5E1 !important; border-radius: 16px !important; padding: 16px 24px !important; margin: 0 16px 16px 16px !important; font-size: 16px !important; font-weight: 600 !important; line-height: 1.8 !important; color: #334155 !important; background: transparent !important; }
-      .contextCard .systemNotice { background: #FEF9C3 !important; border: 2px dashed #F59E0B !important; color: #B45309 !important; padding: 12px 16px !important; border-radius: 16px !important; font-weight: 700 !important; font-size: 15px !important; margin: 0 16px !important; box-shadow: none !important; }
+      .contextCard .card__title { padding: 0 20px 12px 20px !important; border-bottom: none !important; background: transparent !important; }
+      .contextCard .story { 
+          border: 2px dashed #CBD5E1 !important; 
+          border-radius: 16px !important; 
+          padding: 16px 20px !important; 
+          margin: 0 10px 16px 10px !important; 
+          font-size: 16px !important; 
+          font-weight: 600 !important; 
+          line-height: 1.8 !important; 
+          color: #334155 !important; 
+          background: transparent !important; 
+      }
+      .contextCard .systemNotice { background: #FEF9C3 !important; border: 2px dashed #F59E0B !important; color: #B45309 !important; padding: 12px 16px !important; border-radius: 16px !important; font-weight: 700 !important; font-size: 15px !important; margin: 0 10px !important; box-shadow: none !important; }
 
       /* ==========================================
          【8. 强迫症修复：思考动画向下沉，贴近输入框】
          ========================================== */
       .chatCard .chat { 
-          padding: 24px 24px 8px 24px !important; /* 减小底部 padding */
+          padding: 24px 24px 8px 24px !important; 
           background: #FFFFFF !important; 
       }
       
@@ -156,7 +165,6 @@
           gap: 8px !important; 
           width: fit-content; 
           font-size: 14px;
-          /* 核心修改：大幅度增加上边距，缩小下边距，让它完美贴合底部的蓝色框区 */
           margin: 24px auto 8px auto !important; 
       }
       .typing-indicator.active { display: flex; }
@@ -212,11 +220,37 @@
       .msg--right .msg-content-wrap { align-items: flex-end; }
       .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; padding: 12px 16px; font-size: 16px; font-weight: 600; line-height: 1.6;}
       
-      .heart-match-container { padding: 20px 24px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; max-width: 460px; box-sizing: border-box; transition: all 0.3s ease; border: 3px solid #1E293B !important; border-radius: 20px !important;}
-      .heart-track { position: relative; height: 48px; margin: 20px 0 36px 0; }
-      .heart { position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; display: flex; align-items: center; justify-content: center;}
-      .match-text { font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
-      .match-subtext { font-size: 16px; font-weight: 700; margin-bottom: 24px; }
+      /* ==========================================
+         【11. 打分卡片终极瘦身：横向拉宽，纵向压缩】
+         ========================================== */
+      .heart-match-container { 
+          padding: 16px 24px; /* 压缩内边距 */
+          text-align: center; 
+          margin: 10px 0; 
+          position: relative; 
+          display: block; 
+          width: 100%; 
+          max-width: 580px; /* 核心：放宽卡片，不再窄窄的 */
+          box-sizing: border-box; 
+          transition: all 0.3s ease; 
+          border: 3px solid #1E293B !important; 
+          border-radius: 20px !important;
+      }
+      .heart-track { 
+          position: relative; 
+          height: 40px; /* 压扁轨道区域 */
+          margin: 12px 10px 24px 10px; /* 缩小上下边距 */
+      }
+      .heart { 
+          position: absolute; 
+          transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); 
+          z-index: 5; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+      }
+      .match-text { font-size: 32px; font-weight: 900; line-height: 1; margin-bottom: 4px; } /* 缩小数字，减少间距 */
+      .match-subtext { font-size: 15px; font-weight: 700; margin-bottom: 16px; } /* 缩小提示语，减少间距 */
     </style>
   </head>
   <body>
@@ -453,7 +487,6 @@
         let syncInterval = null;
         let currentSessionData = null;
         
-        // 核心修复：自动转换中文字符双引号
         function toChineseQuotes(str) {
             if (!str) return str;
             return str.replace(/['‘]([^'‘’]+?)['’]/g, "“$1”");
@@ -604,17 +637,18 @@
             const guidanceText = result.guidance ? toChineseQuotes(result.guidance) : '';
             const comfortText = result.comfort ? toChineseQuotes(result.comfort) : '';
 
+            // 核心修复：极致压缩间距，紧贴风格
             const guidance = guidanceText ? `
-              <div style="display:flex; align-items:center; gap:12px; margin-bottom: 8px; width: 100%;">
-                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 16px; border: 3px solid #1E293B; text-align: left; font-size: 15px; font-weight: 600; color: #1E293B;">
+              <div style="display:flex; align-items:center; gap:10px; margin-top: 10px; width: 100%;">
+                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 10px 16px; border-radius: 12px; border: 3px solid #1E293B; text-align: left; font-size: 14px; font-weight: 600; color: #1E293B;">
                     <strong style="color:${theme.text};">给你的悄悄话：</strong><br/>${escapeHtml(guidanceText)}
                 </div>
                 <button class="btn-sound" style="flex-shrink: 0;" onclick="window.speakText('${escapeHtml(guidanceText)}', this)" title="朗读悄悄话"><i class="ph-bold ph-speaker-high"></i></button>
               </div>` : '';
 
             const comfort = comfortText ? `
-              <div style="display:flex; align-items:center; gap:12px; margin-bottom: 8px; width: 100%;">
-                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 16px; border: 3px solid #1E293B; text-align: left; font-size: 15px; font-weight: 600; color: #1E293B;">
+              <div style="display:flex; align-items:center; gap:10px; margin-top: 10px; width: 100%;">
+                <div style="flex:1; background: rgba(255,255,255,0.9); padding: 10px 16px; border-radius: 12px; border: 3px solid #1E293B; text-align: left; font-size: 14px; font-weight: 600; color: #1E293B;">
                     <strong style="color:${theme.text};">给对方的安抚：</strong><br/>${escapeHtml(comfortText)}
                 </div>
                 <button class="btn-sound" style="flex-shrink: 0;" onclick="window.speakText('${escapeHtml(comfortText)}', this)" title="朗读安抚"><i class="ph-bold ph-speaker-high"></i></button>
@@ -622,21 +656,21 @@
 
             return `
               <div class="heart-match-container" style="background-color: ${theme.bg};">
-                <div style="font-size:16px; color:${theme.text}; margin-bottom:24px; font-weight:900; display:flex; align-items:center; justify-content:center;"><i class="ph-fill ph-heart-straight"></i> 想法匹配度检测完成</div>
+                <div style="font-size:15px; color:${theme.text}; margin-bottom:12px; font-weight:900; display:flex; align-items:center; justify-content:center;"><i class="ph-fill ph-heart-straight"></i> 想法匹配度检测完成</div>
                 
-                <div class="heart-track" style="position:relative; height:48px; margin: 10px 10px 30px 10px;">
-                    <div style="position:absolute; top:50%; left:0; right:0; height:12px; background: white; border: 3px solid #1E293B; border-radius: 6px; transform: translateY(-50%); box-sizing:border-box;"></div>
-                    <div style="position:absolute; top:50%; left:0; width:calc(${pos}% + 12px); height:12px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 6px 0 0 6px; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
-                    <div style="position:absolute; top:50%; right:0; width:calc(${pos}% + 12px); height:12px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 0 6px 6px 0; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
+                <div class="heart-track" style="position:relative; height:40px; margin: 12px 10px 24px 10px;">
+                    <div style="position:absolute; top:50%; left:0; right:0; height:10px; background: white; border: 3px solid #1E293B; border-radius: 5px; transform: translateY(-50%); box-sizing:border-box;"></div>
+                    <div style="position:absolute; top:50%; left:0; width:calc(${pos}% + 10px); height:10px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 5px 0 0 5px; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
+                    <div style="position:absolute; top:50%; right:0; width:calc(${pos}% + 10px); height:10px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 0 5px 5px 0; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
                     
-                    <div class="heart heart-left" style="left: ${pos}%; top:50%; transform:translate(-50%, -50%); width: 44px; height: 44px; background: #DBEAFE; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #1E3A8A; font-weight:900; font-size:18px; z-index:2;">A</div>
-                    <div class="heart heart-right" style="right: ${pos}%; top:50%; transform:translate(50%, -50%); width: 44px; height: 44px; background: #FEE2E2; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #991B1B; font-weight:900; font-size:18px; z-index:2;">B</div>
+                    <div class="heart heart-left" style="left: ${pos}%; top:50%; transform:translate(-50%, -50%); width: 36px; height: 36px; background: #DBEAFE; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #1E3A8A; font-weight:900; font-size:16px; z-index:2;">A</div>
+                    <div class="heart heart-right" style="right: ${pos}%; top:50%; transform:translate(50%, -50%); width: 36px; height: 36px; background: #FEE2E2; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #991B1B; font-weight:900; font-size:16px; z-index:2;">B</div>
                 </div>
 
-                <div class="match-text" style="color:${theme.text}; font-size:36px; line-height:1; font-weight:900;">${matchPercent}%</div>
-                <div class="match-subtext" style="color: ${theme.lightText}; margin-bottom:24px; font-size:16px;">${title}</div>
+                <div class="match-text" style="color:${theme.text}; font-size:32px; line-height:1; font-weight:900; margin-bottom:4px;">${matchPercent}%</div>
+                <div class="match-subtext" style="color: ${theme.lightText}; margin-bottom:16px; font-size:15px;">${title}</div>
                 
-                <div style="text-align:left; font-size: 15px; color: #1E293B; line-height:1.6;">
+                <div style="text-align:left; color: #1E293B; line-height:1.6;">
                     ${appState.role === result.triggeredBy ? guidance : comfort}
                 </div>
               </div>
