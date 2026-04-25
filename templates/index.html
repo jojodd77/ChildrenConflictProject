@@ -751,7 +751,7 @@
           }
           else if (phase === "negotiate") {
               $("waitRephraseOverlay").setAttribute("aria-hidden", "true");
-              composerSub.textContent = "你们的想法对齐啦！商量好后点击上方【达成一致】！";
+              composerSub.textContent = "请继续和对方商量解决方案！商量好后点击上方【达成一致】！";
               if (modal.getAttribute("aria-hidden") === "false") { modal.setAttribute("aria-hidden", "true"); $("modalText").value=""; }
           }
           else if (phase === "finished") {
@@ -761,7 +761,7 @@
                   const finalReport = session.freeze.finalReport || {
                       praise: "你们展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
                       growth: "你们学会了“停下来想一想”，并勇敢说出了感受，这就是最大的成长！",
-                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用“我希望...”来表达哦！"
+                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用正确的话语来表达哦！"
                   };
                   $("finalPraise").textContent = finalReport.praise;
                   $("finalGrowth").textContent = finalReport.growth;
