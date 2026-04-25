@@ -182,7 +182,7 @@ def join():
         session["chat"].append({
             "id": f"sys_{time.time()}",
             "kind": "system",
-            "text": "🧚 法官精灵：欢迎来到魔法调解屋！请先看看上面的故事，再开始聊天吧。",
+            "text": "<i class='ph-bold ph-magic-wand' style='color:#D97706; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 法官精灵：欢迎来到调解平台！请先看看上面的故事，再开始聊天吧。",
             "meta": "welcome"
         })
 
@@ -206,7 +206,7 @@ def send_message():
     if session["freeze"]["phase"] == "rephrase":
         session["freeze"]["phase"] = "negotiate"
         session["chat"].append({"id": f"m_{time.time()}", "kind": "chat", "from": role, "text": text})
-        session["chat"].append({"id": f"sys_{time.time()}_neg_start", "kind": "system", "text": "💡 精灵小提示：误会解开啦！现在请一起商量个解决办法，商量好后点击上面的【达成一致】哦。", "meta": "negotiate"})
+        session["chat"].append({"id": f"sys_{time.time()}_neg_start", "kind": "system", "text": "<i class='ph-bold ph-lightbulb' style='color:#D97706; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 精灵小提示：误会解开啦！现在请一起商量个解决办法，商量好后点击上面的【达成一致】哦。", "meta": "negotiate"})
     elif session["freeze"]["phase"] not in ["rephrase", "finished"] and not session["freeze"]["active"]:
         
         history_str = format_chat_history(session["chat"])
@@ -245,7 +245,7 @@ def send_message():
             session["chat"].append({
                 "id": f"sys_{time.time()}_freeze",
                 "kind": "system",
-                "text": "🚨 法官精灵发现火药味有点重哦！为了不让小火苗变成大火灾，我们先暂停一下，深呼吸~ 请在弹窗里告诉精灵你的想法。",
+                "text": "<i class='ph-bold ph-warning-circle' style='color:#DC2626; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 法官精灵发现火药味有点重哦！为了不让小火苗变成大火灾，我们先暂停一下，深呼吸~ 请在弹窗里告诉精灵你的想法。",
                 "meta": "freeze"
             })
     else:
@@ -355,12 +355,12 @@ def submit_freeze():
         session["chat"].append({"id": f"judge_{time.time()}", "kind": "judgeCard", "extra": result})
 
         if result["route"] == "rephrase":
-            session["chat"].append({"id": f"sys_{time.time()}_guide", "kind": "system", "text": f"💡 精灵小提示：{result.get('guidance', '请换一种温柔的表达哦。')}", "meta": "rephrase", "target": triggered_by})
-            session["chat"].append({"id": f"sys_{time.time()}_comfort", "kind": "system", "text": f"💖 精灵悄悄话：{result.get('comfort', '抱抱你，等对方重新整理一下语言。')}", "meta": "rephrase", "target": receiver})
+            session["chat"].append({"id": f"sys_{time.time()}_guide", "kind": "system", "text": f"<i class='ph-bold ph-lightbulb' style='color:#D97706; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 精灵小提示：{result.get('guidance', '请换一种温柔的表达哦。')}", "meta": "rephrase", "target": triggered_by})
+            session["chat"].append({"id": f"sys_{time.time()}_comfort", "kind": "system", "text": f"<i class='ph-bold ph-heart' style='color:#E11D48; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 精灵悄悄话：{result.get('comfort', '抱抱你，等对方重新整理一下语言。')}", "meta": "rephrase", "target": receiver})
         else:
-            session["chat"].append({"id": f"sys_{time.time()}_neg", "kind": "system", "text": "💡 精灵小提示：你们的心电波对齐啦！现在一起商量个好办法吧。", "meta": "negotiate"})
+            session["chat"].append({"id": f"sys_{time.time()}_neg", "kind": "system", "text": "<i class='ph-bold ph-lightbulb' style='color:#D97706; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 精灵小提示：你们的心电波对齐啦！现在一起商量个好办法吧。", "meta": "negotiate"})
     else:
-        msg_text = "⏳ 你已经说出真实想法啦，法官精灵正在等另一位小朋友说完..."
+        msg_text = "<i class='ph-bold ph-hourglass-high' style='color:#D97706; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 你已经说出真实想法啦，法官精灵正在等另一位小朋友说完..."
         if not any(m.get("text") == msg_text for m in session["chat"]):
             session["chat"].append({"id": f"sys_{time.time()}_wait", "kind": "system", "text": msg_text, "meta": "waiting"})
 
@@ -387,10 +387,10 @@ def agree():
             "tip": "法官精灵的交友秘籍：下次再遇到让你着急的事情，记得在心里数三秒，然后用‘我希望/我需要...’来表达，好朋友会更懂你哦！"
         }
 
-        session["chat"].append({"id": f"sys_{time.time()}_celeb", "kind": "system", "text": "🎉 太棒了！因为你们成功合作，误会解开啦，每人奖励一朵 🌸 小红花！", "meta": "celebrate"})
-        session["chat"].append({"id": f"sys_{time.time()}_feel_A", "kind": "system", "text": "🧚 法官精灵：回想一下最开始生气的时刻，再看看现在，心里感觉怎么样呀？", "meta": "finished", "target": "A"})
-        session["chat"].append({"id": f"sys_{time.time()}_enc_A", "kind": "system", "text": "🌟 精灵小广播：你今天做得很棒！学会了用沟通解开误会！", "meta": "finished", "target": "A"})
-        session["chat"].append({"id": f"sys_{time.time()}_enc_B", "kind": "system", "text": "🌟 精灵小广播：你是个善解人意的好搭档！没有陷入争吵，做得很棒！", "meta": "finished", "target": "B"})
+        session["chat"].append({"id": f"sys_{time.time()}_celeb", "kind": "system", "text": "<i class='ph-bold ph-confetti' style='color:#D97706; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 太棒了！因为你们成功合作，误会解开啦，每人奖励一朵小红花！", "meta": "celebrate"})
+        session["chat"].append({"id": f"sys_{time.time()}_feel_A", "kind": "system", "text": "<i class='ph-bold ph-magic-wand' style='color:#D97706; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 法官精灵：回想一下最开始生气的时刻，再看看现在，心里感觉怎么样呀？", "meta": "finished", "target": "A"})
+        session["chat"].append({"id": f"sys_{time.time()}_enc_A", "kind": "system", "text": "<i class='ph-bold ph-megaphone' style='color:#2563EB; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 精灵小广播：你今天做得很棒！学会了用沟通解开误会！", "meta": "finished", "target": "A"})
+        session["chat"].append({"id": f"sys_{time.time()}_enc_B", "kind": "system", "text": "<i class='ph-bold ph-megaphone' style='color:#2563EB; margin-right:4px; font-size:16px; position:relative; top:2px;'></i> 精灵小广播：你是个善解人意的好搭档！没有陷入争吵，做得很棒！", "meta": "finished", "target": "B"})
 
     save_session(session)
     return jsonify(session)
