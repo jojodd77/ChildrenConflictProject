@@ -206,15 +206,13 @@ def send_message():
     if session["freeze"]["phase"] == "rephrase":
         session["freeze"]["phase"] = "negotiate"
         session["chat"].append({"id": f"m_{time.time()}", "kind": "chat", "from": role, "text": text})
-        session["chat"].append({"id": f"sys_{time.time()}_neg_start", "kind": "system", "text": "精灵小提示：误会解开啦！现在请一起商量个解决办法，商量好后点击上面的【达成一致】哦。", "meta": "negotiate"})
+        # 【修复点 1】：重新表达后，不再说“误会解除了”，而是表扬进步并进入解决问题阶段
+        session["chat"].append({"id": f"sys_{time.time()}_neg_start", "kind": "system", "text": "精灵小提示：这次的表达有了很大的进步，听起来舒服多了！现在请你们就事论事，一起商量个解决办法吧。商量好后点击上方的【我们商量好了】哦。", "meta": "negotiate"})
     elif session["freeze"]["phase"] not in ["rephrase", "finished"] and not session["freeze"]["active"]:
         
         history_str = format_chat_history(session["chat"])
         scenario_title = session["scenario"]["title"]
 
-        # =================================================================
-        # 【核心修改 1】：收紧触发阈值，精准打击“贴标签”和“人身攻击”
-        # =================================================================
         agent2_prompt = f"""
         你是一个专业的儿童心理学监听专家。情境：【{scenario_title}】。对话历史：{history_str}
 
@@ -235,7 +233,6 @@ def send_message():
             val = detect_res["is_hostile"]
             is_hostile = (val.lower() == "true") if isinstance(val, str) else bool(val)
         else:
-            # 强化兜底拦截词库
             is_hostile = any(kw in text for kw in ['白痴', '去死', '有病', '恶心', '讨厌', '烦', '笨', '故意', '神经病', '讨厌鬼', '闭嘴', '滚'])
 
         session["chat"].append({"id": f"m_{time.time()}", "kind": "chat", "from": role, "text": text})
@@ -283,6 +280,10 @@ def submit_freeze():
         b_guess_str = session["freeze"]["bGuess"]
         triggered_by = session["freeze"]["triggeredBy"]
         receiver = "B" if triggered_by == "A" else "A"
+        
+        # 提取客观事实用于就事论事
+        scenario_title = session["scenario"].get("title", "")
+        objective_fact = session["scenario"].get("objective_fact", "")
 
         similarity = difflib.SequenceMatcher(None, a_motivation_str, b_guess_str).ratio()
         if similarity > 0.85:
@@ -295,10 +296,12 @@ def submit_freeze():
             }
         else:
             # =================================================================
-            # 【核心修改 2】：全面升级心理引导话术，强制要求“晓之以情，动之以理”
+            # 【修复点 2】：强制注入“客观事实真相”，引导必须详细、就事论事！
             # =================================================================
             agent34_prompt = f"""
             你同时扮演【裁判Agent】和【引导Agent】，是一只极具共情能力、充满智慧的儿童心理专家“法官精灵”。
+            当前情境：{scenario_title}
+            【核心客观事实真相】：{objective_fact}  <- 请务必参考这个事实来化解误会！
             发火方填写的真实动机："{a_motivation_str}"
             被骂方猜测的动机："{b_guess_str}"
 
@@ -309,18 +312,18 @@ def submit_freeze():
 
             【确定流程(route)】：分数 > 0.3 为 "rephrase"，否则 "negotiate"。
 
-            【话术规范：晓之以情，动之以理】：
-            语气必须温柔、童趣、像知心大姐姐一样娓娓道来，字数适中，绝对不要生硬说教！
+            【话术规范：详细引导，就事论事】：
+            语气必须温柔、童趣。必须结合【核心客观事实真相】，详细地进行分析，每段字数在60-80字左右！不能只说套话！
             
             - `guidance` (给发火方的悄悄话)：
-              1. 晓之以情：先接纳TA生气的合理性（如“心爱的东西弄坏了，换作是谁都会很着急的”）。
-              2. 动之以理：引导换位思考，指出误会（如“但是仔细想想，他真的是故意的吗？如果直接用伤人的词语，真正想帮忙的朋友也会难过哦”）。
-              3. 给出建议：鼓励用“我希望/我需要”来重新表达。
+              1. 共情：肯定TA因为遭受损失而生气的合理性（比如“看到标本碎了肯定很着急”）。
+              2. 揭示真相（就事论事）：结合【客观事实真相】，告诉TA对方其实是出于好意（比如“他其实是想帮你挡风”）。
+              3. 引导：鼓励TA用“我希望/我需要”重新表达感受，不要贴标签。
               
             - `comfort` (给被指责方的安抚)：
-              1. 晓之以情：深深共情TA的委屈，肯定TA的善意（如“抱抱你，本来是好心想帮忙却被误会，心里一定特别委屈吧”）。
-              2. 动之以理：解释对方发火的原因（如“他现在只是被着急的情绪蒙住了眼睛，并不是真的讨厌你”）。
-              3. 给出建议：安抚TA耐心等待对方冷静下来重组语言。
+              1. 共情：肯定TA被误会后的委屈（“好心帮忙却被当成坏人，确实很委屈”）。
+              2. 解释（就事论事）：解释发火方只是因为损失太着急了，没看到你的本来目的。
+              3. 安抚：耐心等待对方重新表达。
 
             严格返回JSON格式：
             {{
@@ -332,7 +335,7 @@ def submit_freeze():
             }}
             """
 
-            judge_res = call_agent(agent34_prompt, "请分析动机并打分！", agent_name="裁判&引导 Agent", temperature=0.3)
+            judge_res = call_agent(agent34_prompt, "请结合客观事实详细打分并生成引导！", agent_name="裁判&引导 Agent", temperature=0.3)
 
             if judge_res:
                 try:
@@ -348,11 +351,10 @@ def submit_freeze():
                     guidance = ""
                     comfort = ""
                 else:
-                    # 兜底优化：如果大模型生成的内容还是太短或敷衍，用高质量预设文本替换
                     if "发火方" in guidance or "的建议" in guidance or len(guidance) < 15:
-                        guidance = "看到心爱的东西坏了，你肯定很着急难过，我非常理解。但是仔细想想，直接贴上“讨厌鬼”的标签，会不会让原本想帮忙的朋友很伤心呢？试着用“我希望你下次...”来重新告诉他你的感受吧。"
+                        guidance = f"发生这样的事你肯定很生气，我都理解。但如果直接用伤人的词语，原本出于好意的朋友也会难过的。试着用“我希望...”重新告诉对方你的想法吧！"
                     if "被骂方" in comfort or "的安抚" in comfort or len(comfort) < 15:
-                        comfort = "抱抱你，本来是好意却被误会，心里一定特别委屈吧。对方现在只是被着急的情绪蒙住了眼睛，没有看到你的好心。我们等他冷静一下，换个温柔的方式听听他怎么说。"
+                        comfort = "抱抱你，好心办坏事还被指责，心里一定很委屈。他只是太着急了没发现你的善意，我们耐心等他冷静下来换个说法吧。"
 
                 result = {
                     "misinterpretation": mis_score,
@@ -365,7 +367,7 @@ def submit_freeze():
                 mis_score = 0.92 if any(kw in b_guess_str for kw in ["霸道", "嫉妒", "故意", "坏", "抢"]) else 0.45
                 result = {
                     "misinterpretation": mis_score,
-                    "guidance": "发生这样的意外你肯定很生气，我都理解。但如果直接说伤人的话，想帮忙的朋友也会难过的。试着用“我希望...”重新告诉对方你的想法吧！",
+                    "guidance": "发生这样的事你肯定很生气，我都理解。但如果直接用伤人的词语，原本出于好意的朋友也会难过的。试着用“我希望...”重新告诉对方你的想法吧！",
                     "comfort": "抱抱你，好心办坏事还被指责，心里一定很委屈。他只是太着急了没发现你的善意，我们耐心等他冷静下来换个说法吧。",
                     "route": "rephrase" if mis_score > 0.3 else "negotiate",
                     "triggeredBy": triggered_by
@@ -377,7 +379,8 @@ def submit_freeze():
         session["chat"].append({"id": f"judge_{time.time()}", "kind": "judgeCard", "extra": result})
 
         if result["route"] == "rephrase":
-            session["chat"].append({"id": f"sys_{time.time()}_guide", "kind": "system", "text": "精灵小提示：请换一种温柔的表达哦。", "meta": "rephrase", "target": triggered_by})
+            # 配合更加详细的卡片提示，修改这里的短提示
+            session["chat"].append({"id": f"sys_{time.time()}_guide", "kind": "system", "text": "精灵小提示：请看看上面卡片里的悄悄话，试着换一种温柔的方式重新说一句话吧。", "meta": "rephrase", "target": triggered_by})
             session["chat"].append({"id": f"sys_{time.time()}_comfort", "kind": "system", "text": "精灵悄悄话：对方正在整理语言，请耐心等待哦。", "meta": "rephrase", "target": receiver})
         else:
             session["chat"].append({"id": f"sys_{time.time()}_neg", "kind": "system", "text": "精灵小提示：你们的心电波对齐啦！现在一起商量个好办法吧。", "meta": "negotiate"})
@@ -406,7 +409,7 @@ def agree():
         session["freeze"]["finalReport"] = {
             "praise": "你们都太棒啦！在遇到矛盾时没有一直发脾气，而是愿意停下来听对方说话，这就是超级厉害的【共情能力】！",
             "growth": f"在解决【{scenario_title}】的误会时，你们勇敢地说出了自己的感受。你们学会了用沟通代替争吵，这就是最大的成长！",
-            "tip": "法官精灵的交友秘籍：下次再遇到让你着急的事情，记得在心里数三秒，然后用正确的语言表达自己内心的感受，不要冲动，好朋友会更懂你哦！"
+            "tip": "法官精灵的交友秘籍：下次再遇到让你着急的事情，记得在心里数三秒，然后用“我希望/我需要...”来表达，好朋友会更懂你哦！"
         }
 
         session["chat"].append({"id": f"sys_{time.time()}_celeb", "kind": "system", "text": "太棒了！因为你们成功合作，误会解开啦，每人奖励一朵小红花！", "meta": "celebrate"})
