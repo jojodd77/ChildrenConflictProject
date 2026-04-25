@@ -12,32 +12,52 @@
 
     <style>
       /* ==========================================
-         【全局：终极去阴影魔法】
-         清除所有元素的夸张黑阴影，只保留描边
+         【1. 终极统一规范：全量去阴影 + 统一3px描边】
+         强制接管系统所有组件，抹除所有阴影！
          ========================================== */
-      .btn, .card, .chip, .modal__panel, .pause-box, .report-card-super, .hero__image, .avatar, .btn--mic, .btn--read, .btn--primary, .btn--ghost, .btn--secondary, .btn-sound, .super-btn, .super-tip-box, .heart-match-container, .quote-box, .input, .textarea {
+      .card, .bubble, .avatar, .input, .textarea, .btn, .chip, .presence, 
+      .systemNotice, .hero__image, .modal__panel, .pause-box, 
+      .report-card-super, .super-tip-box, .heart-match-container, 
+      .quote-box, #modalClose, .typing-indicator, .modal-mic-container,
+      .btn-sound, .super-btn {
           box-shadow: none !important;
+          border: 3px solid #1E293B !important;
       }
 
+      /* 顶部与内容分隔线统一粗细 */
+      .topbar, .chatHeader, .modal__header {
+          border-bottom: 3px solid #1E293B !important;
+          box-shadow: none !important;
+      }
+      
+      /* 品牌Logo保持透明无描边 */
+      .brand__logo { border: none !important; box-shadow: none !important; }
+
+      /* 统一的按压交互反馈 (因为去掉了阴影，改用扁平化缩放) */
+      .btn:active, .btn-sound:active, #modalClose:active, .super-btn:active {
+          transform: scale(0.94) !important;
+      }
+      
+      /* 移除系统默认的焦点蓝框，用背景变色替代 */
+      .input:focus, .textarea:focus { outline: none; background-color: #F8FAFC; }
+
       /* ==========================================
-         【1. 首页排版修复】
+         【2. 布局基础优化】
          ========================================== */
       #screenHome.screen--active { display: flex; flex-direction: column; justify-content: center; }
-      .btn { white-space: nowrap !important; transition: all 0.15s ease !important; }
-      .btn:active { transform: scale(0.96) !important; } /* 扁平化点击缩放效果 */
-      
+      .btn { white-space: nowrap !important; transition: transform 0.15s ease !important; }
       .card.hero { height: fit-content !important; padding: 40px 50px !important; margin: auto 0 !important; align-items: center; }
       .hero__image-container { position: relative; width: 100%; height: auto !important; display: flex; align-items: center; justify-content: center; }
-      .hero__image { width: 100%; max-width: 360px; height: auto; border: 4px solid #1E293B; border-radius: 20px; }
+      .hero__image { width: 100%; max-width: 360px; height: auto; border-radius: 20px; }
 
       .brand { display: flex; align-items: center; gap: 12px; }
       .brand__logo { width: 48px; height: 48px; object-fit: contain; } 
       .brand__title { font-size: 20px; font-weight: 900; color: #1E293B; }
 
       /* ==========================================
-         【2. 全屏加载与和好动画】
+         【3. 全屏加载与和好动画】
          ========================================== */
-      .modal.loadingOverlay { position: fixed; inset: 0; z-index: 10001; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
+      .modal.loadingOverlay { position: fixed; inset: 0; z-index: 10001; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; border: none !important; }
       .modal.loadingOverlay[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
       .magic-spinner { font-size: 80px; animation: magicWand 2.5s infinite linear; margin-bottom: 24px; }
       .loading-text { font-size: 18px; font-weight: 700; color: #D97706; text-align: center; }
@@ -51,31 +71,29 @@
       .celeb-text { color: #F43F5E; font-weight: 900; font-size: 26px; text-align: center; padding: 0 20px; margin-top: 20px; line-height: 1.5; animation: popIn 0.8s ease forwards; }
 
       /* ==========================================
-         【3. 对话框核心交互控件】
+         【4. 按钮专属色彩与交互】
          ========================================== */
-      .btn--read {
-          background-color: #93C5FD; color: #1E293B; border: 2px solid #1E293B; border-radius: 12px; padding: 6px 14px; font-size: 14px; font-weight: 900; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 6px;
-      }
-      .btn--read:hover { background-color: #BFDBFE; transform: scale(0.98); }
-      .btn--read:active { transform: scale(0.94); }
-      .btn--read.playing { background-color: #FDE047; animation: none; }
+      .btn--read { background-color: #93C5FD; color: #1E293B; border-radius: 12px; padding: 6px 14px; font-size: 14px; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+      .btn--read:hover { background-color: #BFDBFE; }
+      .btn--read.playing { background-color: #FDE047; }
 
-      .btn--mic { 
-          width: 64px !important; height: 64px !important; font-size: 30px !important; border-radius: 50% !important; background: #FDE047 !important; border: 3px solid #1E293B !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s !important; flex-shrink: 0; color: #1E293B !important; padding: 0 !important;
-      }
-      .btn--mic:hover { transform: scale(0.96) !important; background: #FEF08A !important; }
-      .btn--mic:active { transform: scale(0.92) !important; }
-      .btn--mic.recording { background: #EF4444 !important; color: white !important; border-color: transparent !important; }
+      .btn--mic { width: 64px !important; height: 64px !important; font-size: 30px !important; border-radius: 50% !important; background: #FDE047 !important; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: #1E293B !important; padding: 0 !important; }
+      .btn--mic:hover { background: #FEF08A !important; }
+      .btn--mic.recording { background: #EF4444 !important; color: white !important; animation: micPulse 0.8s infinite alternate !important; border-color: #991B1B !important; }
+      @keyframes micPulse { 0% { transform: scale(1); background-color: #EF4444; } 100% { transform: scale(1.08); background-color: #DC2626; } }
 
       .composer__row { display: flex; gap: 12px; align-items: center; width: 100%; margin-top: 5px; }
-      .composer__row .input { flex: 1; height: 64px !important; border-radius: 32px !important; font-size: 16px; padding: 0 24px; border: 3px solid #1E293B !important; }
-      .composer__row .btn--primary { flex-shrink: 0; height: 64px !important; border-radius: 32px !important; font-size: 18px !important; font-weight: 900 !important; padding: 0 32px !important; border: 3px solid #1E293B !important; transition: all 0.15s; }
+      .composer__row .input { flex: 1; height: 64px !important; border-radius: 32px !important; font-size: 16px; padding: 0 24px; }
+      .composer__row .btn--primary { flex-shrink: 0; height: 64px !important; border-radius: 32px !important; font-size: 18px !important; font-weight: 900 !important; padding: 0 32px !important; }
 
-      .btn-sound { background: rgba(255,255,255,0.5); border: 2px solid #1E293B; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
-      .btn-sound:hover { background: rgba(255,255,255,0.9); transform: scale(0.95); }
+      .btn-sound { background: rgba(255,255,255,0.8); border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      .btn-sound:hover { background: #FFFFFF; }
       .btn-sound.playing { background: #FDE047; }
 
-      .heart-match-container { border-width: 3px; border-style: solid; border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; transition: all 0.3s ease; }
+      /* ==========================================
+         【5. 卡片内容布局】
+         ========================================== */
+      .heart-match-container { border-radius: 16px; padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; }
       .heart-track { height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
       .heart { font-size: 40px; position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; }
       .heart-left { left: 0%; }
@@ -83,107 +101,57 @@
       .match-text { font-size: 24px; font-weight: 900; margin-top: 10px; }
       .match-subtext { font-size: 16px; font-weight: 700; margin-top: 5px; margin-bottom: 15px; }
 
-      .typing-indicator { display: none; padding: 12px 16px; background: #FEF3C7; border-radius: 12px; font-size: 14px; color: #B45309; align-items: center; gap: 8px; width: fit-content; margin: 10px 0; border: 2px solid #1E293B; }
+      .typing-indicator { display: none; padding: 12px 16px; background: #FEF3C7; border-radius: 12px; font-size: 14px; color: #B45309; align-items: center; gap: 8px; width: fit-content; margin: 10px 0; }
       .typing-indicator.active { display: flex; }
       .dots span { display: inline-block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
-      .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: flex-start !important; }
-      .msg--right { flex-direction: row-reverse !important; }
-      .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; font-weight: 900 !important; border: 2px solid #064E3B !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0; }
-      .avatar--a, .avatar--b { flex-shrink: 0; }
-      .msg-content-wrap { display: flex; flex-direction: column; max-width: 85%; }
-      .msg:not(.msg--right) .msg-content-wrap { align-items: flex-start; }
-      .msg--right .msg-content-wrap { align-items: flex-end; }
-      .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; }
-
       /* ==========================================
-         【4. 统一弹窗设计规范 (无阴影扁平版)】
-         核心规范：4px粗黑边框、24px大圆角、纯平无阴影
+         【6. 各大弹窗的无阴影清爽排版】
          ========================================== */
-
-      /* A. 动机采集弹窗 */
-      #modal .modal__panel {
-          border: 4px solid #1E293B !important;
-          border-radius: 24px !important;
-          padding: 0 !important;
-          background: #F8FAFC !important;
-          overflow: hidden;
-          max-width: 500px !important;
-      }
-      #modal .modal__header {
-          background: #6EE7B7 !important; 
-          border-bottom: 4px solid #1E293B !important;
-          padding: 16px 24px !important;
-          display: flex; justify-content: space-between; align-items: center;
-      }
-      #modal .modal__title {
-          color: #1E293B !important;
-          font-weight: 900 !important;
-          font-size: 20px !important;
-      }
+      #modal .modal__panel { border-radius: 24px !important; padding: 0 !important; background: #F8FAFC !important; overflow: hidden; max-width: 500px !important; }
+      #modal .modal__header { background: #6EE7B7 !important; padding: 16px 24px !important; display: flex; justify-content: space-between; align-items: center; }
+      #modal .modal__title { color: #1E293B !important; font-weight: 900 !important; font-size: 20px !important; }
       #modal .modal__body { padding: 24px !important; }
-      #modal .modal__footer {
-          padding: 0 24px 24px !important;
-          border-top: none !important;
-          display: flex; gap: 12px; justify-content: flex-end;
-      }
-      #modalClose {
-          background: #FDA4AF !important; border: 3px solid #1E293B !important; border-radius: 50% !important;
-          width: 32px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important;
-          color: #1E293B !important; font-weight: 900 !important; opacity: 1 !important;
-          transition: all 0.15s; cursor: pointer;
-      }
-      #modalClose:active { transform: scale(0.9); }
-      #modalCancel {
-          background: #FDE047 !important; border: 3px solid #1E293B !important;
-          border-radius: 20px !important; color: #1E293B !important; font-weight: 900 !important; padding: 10px 24px !important; transition: all 0.15s;
-      }
-      #modalSubmit {
-          background: #6EE7B7 !important; border: 3px solid #1E293B !important;
-          border-radius: 20px !important; color: #064E3B !important; font-weight: 900 !important; padding: 10px 24px !important; transition: all 0.15s;
-      }
-      #modalCancel:active, #modalSubmit:active { transform: scale(0.96) !important; }
+      #modal .modal__footer { padding: 0 24px 24px !important; border-top: none !important; display: flex; gap: 12px; justify-content: flex-end; }
+      
+      #modalClose { background: #FDA4AF !important; border-radius: 50% !important; width: 32px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important; color: #1E293B !important; font-weight: 900 !important; cursor: pointer; }
+      #modalCancel { background: #FDE047 !important; border-radius: 20px !important; color: #1E293B !important; font-weight: 900 !important; padding: 10px 24px !important; }
+      #modalSubmit { background: #6EE7B7 !important; border-radius: 20px !important; color: #064E3B !important; font-weight: 900 !important; padding: 10px 24px !important; }
 
-      .quote-box {
-          background: #FEE2E2; border: 3px solid #1E293B; border-radius: 12px; padding: 12px; margin: 12px 0;
-          color: #991B1B; font-weight: 700; font-size: 15px; text-align: left;
-      }
-      .modal-mic-container {
-          border: 3px dashed #94A3B8 !important; border-radius: 16px !important; background: white !important;
-          padding: 20px 0; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center;
-      }
+      .quote-box { background: #FEE2E2; border-radius: 12px; padding: 12px; margin: 12px 0; color: #991B1B; font-weight: 700; font-size: 15px; text-align: left; }
+      .modal-mic-container { border-style: dashed !important; border-radius: 16px !important; background: white !important; padding: 20px 0; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; }
+      #btnMicModal { width: 80px !important; height: 80px !important; font-size: 36px !important; }
+      .mic-text-hint { font-size: 16px; font-weight: 900; color: #1E293B; margin-top: 15px; }
 
-      /* B. 接收方降温遮罩 */
       #waitRephraseOverlay { background: rgba(255, 255, 255, 0.95); z-index: 9900; }
-      .pause-box {
-          background: #EFF6FF !important; border: 4px solid #1E293B !important; border-radius: 24px !important;
-          padding: 40px !important; text-align: center; max-width: 500px;
-      }
+      .pause-box { background: #EFF6FF !important; border-radius: 24px !important; padding: 40px !important; text-align: center; max-width: 500px; }
       .pause-box h2 { color: #1E3A8A; font-size: 24px; font-weight: 900; margin-bottom: 10px; }
       .pause-box p { font-size: 16px; color: #1E293B; line-height: 1.6; margin-bottom: 20px; font-weight: 600; }
 
-      /* C. 成长报告弹窗 */
-      .report-card-super {
-          background: #BFDBFE !important; border: 4px solid #1E293B !important; border-radius: 24px !important;
-          padding: 30px !important; text-align: center; max-width: 600px;
-      }
+      .report-card-super { background: #BFDBFE !important; border-radius: 24px !important; padding: 30px !important; text-align: center; max-width: 600px; }
       .report-card-super h2 { color: #1E3A8A; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
       .report-card-super p { font-size: 16px; color: #1E40AF; margin-bottom: 20px; font-weight: 900; }
-      
-      .super-tip-box {
-          background: white !important; border: 3px solid #1E293B !important; border-radius: 16px !important;
-          padding: 15px !important; margin: 15px 0 !important;
-          font-size: 14px; text-align: left; line-height: 1.6;
-      }
+      .super-tip-box { background: white !important; border-radius: 16px !important; padding: 15px !important; margin: 15px 0 !important; font-size: 14px; text-align: left; line-height: 1.6; }
       .super-btn-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
-      .super-btn {
-          border-radius: 20px; padding: 12px 24px; font-weight: 900; font-size: 16px; border: 3px solid #1E293B;
-          cursor: pointer; transition: all 0.15s;
-      }
-      .super-btn:active { transform: scale(0.96); }
+      .super-btn { border-radius: 20px; padding: 12px 24px; font-weight: 900; font-size: 16px; cursor: pointer; }
       .super-btn-ghost { background: white; color: #1E293B; }
       .super-btn-primary { background: #818CF8; color: #1E293B; }
+
+      /* ==========================================
+         【7. 聊天气泡对齐与纯粹描边】
+         ========================================== */
+      .msg { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; justify-content: flex-start !important; align-items: flex-start !important; }
+      .msg--right { flex-direction: row-reverse !important; }
+      .avatar { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+      .avatar--j { background: #A7F3D0 !important; color: #064E3B !important; }
+      .avatar--a { background: #FEE2E2 !important; color: #991B1B !important; }
+      .avatar--b { background: #DBEAFE !important; color: #1E3A8A !important; }
+      .msg-content-wrap { display: flex; flex-direction: column; max-width: 85%; }
+      .msg:not(.msg--right) .msg-content-wrap { align-items: flex-start; }
+      .msg--right .msg-content-wrap { align-items: flex-end; }
+      .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; border-radius: 16px !important; padding: 12px 16px; }
+      
     </style>
   </head>
   <body>
@@ -286,8 +254,8 @@
 
                 <div style="padding: 0 16px;">
                     <div class="typing-indicator" id="typingIndicator">
-                       <div class="avatar avatar--j" style="width:24px; height:24px; border: 2px solid #1E293B; background: #A7F3D0; display:flex; align-items:center; justify-content:center;">
-                           <span style="color:#064E3B; font-weight:900; font-size:12px;">法</span>
+                       <div class="avatar avatar--j">
+                           <span style="font-size:12px;">法</span>
                        </div>
                        法官精灵正在努力思考中... <div class="dots"><span></span><span></span><span></span></div>
                     </div>
@@ -295,7 +263,7 @@
 
                 <div class="composer">
                   <div id="negotiateActions" style="display: none; padding-bottom: 12px; text-align: center;">
-                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: #A7F3D0; border: 3px solid #1E293B; color: #064E3B; width: 100%; font-weight: 900; transition: all 0.15s;">🤝 我们商量好了 (点击拉钩)</button>
+                    <button class="btn btn--primary" id="btnAgree" type="button" style="background-color: #A7F3D0; color: #064E3B; width: 100%; font-weight: 900;">🤝 我们商量好了 (点击拉钩)</button>
                   </div>
                   <div class="composer__row">
                     <button class="btn btn--mic" id="btnMicChat" title="点击麦克风直接说话">🎤</button>
@@ -343,7 +311,7 @@
 
     <div class="modal" id="finishModal" aria-hidden="true" role="dialog" aria-modal="true" style="z-index: 10000;">
       <div class="modal__backdrop"></div>
-      <div class="modal__panel" role="document" style="background: transparent; border: none;">
+      <div class="modal__panel" role="document" style="background: transparent; border: none !important;">
         <div class="report-card-super">
           <h2>🏆 调解大成功！</h2>
           <p>这是法官精灵为你们颁发的专属《成长报告》</p>
@@ -540,15 +508,15 @@
             if (!result) return "";
             const score = Math.max(0, Math.min(100, Math.round(result.misinterpretation * 100))); const matchPercent = 100 - score; const offset = (score / 2);
             let theme = {}; let title = "";
-            if (matchPercent > 70) { title = "太棒了，你们的心贴得很近！"; theme = { bg: '#F0FDF4', border: '#6EE7B7', text: '#047857', lightText: '#065F46' }; }
-            else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#FFFBEB', border: '#FCD34D', text: '#B45309', lightText: '#D97706' }; }
-            else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', border: '#FCA5A5', text: '#B91C1C', lightText: '#DC2626' }; }
+            if (matchPercent > 70) { title = "太棒了，你们的心贴得很近！"; theme = { bg: '#F0FDF4', text: '#047857', lightText: '#065F46' }; }
+            else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#FFFBEB', text: '#B45309', lightText: '#D97706' }; }
+            else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', text: '#B91C1C', lightText: '#DC2626' }; }
 
             const guidance = result.guidance ? `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.guidance)}', this)">🔊</button><div style="flex:1; padding-top:4px;"><strong>给你的悄悄话：</strong>${result.guidance}</div></div>` : '';
             const comfort = result.comfort ? `<div style="display:flex; align-items:flex-start; gap:8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.comfort)}', this)">🔊</button><div style="flex:1; padding-top:4px;"><strong>给对方的安抚：</strong>${result.comfort}</div></div>` : '';
 
             return `
-              <div class="heart-match-container" style="background-color: ${theme.bg}; border-color: ${theme.border};">
+              <div class="heart-match-container" style="background-color: ${theme.bg};">
                 <div style="font-size:14px; color:${theme.text}; margin-bottom:10px; font-weight:bold;">💖 心心匹配度检测完成</div>
                 <div class="heart-track">
                     <div class="heart heart-left" style="left: ${40 - offset}%">👦</div>
@@ -556,7 +524,7 @@
                 </div>
                 <div class="match-text" style="color:${theme.text};">想法匹配度：${matchPercent}%</div>
                 <div class="match-subtext" style="color: ${theme.lightText};">${title}</div>
-                <hr style="margin: 15px 0; border: none; border-top: 1px dashed ${theme.border};">
+                <hr style="margin: 15px 0; border: none; border-top: 3px solid #1E293B;">
                 <div style="text-align:left; font-size: 14px; color: ${theme.text}; line-height:1.6;">
                     ${appState.role === result.triggeredBy ? guidance : comfort}
                 </div>
