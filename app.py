@@ -23,9 +23,10 @@ UPSTASH_TOKEN = "AZ3JAAIncDFkZTI3YTc0N2VlZmM0ZGM2OTY2ZDYxNmRiNDUyNjAxNXAxNDAzOTM
 # 本地内存保底
 sessions_db = {}
 
-def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3, timeout=7.0):
+# 【核心修复】：默认超时时间从 7.0 秒提升到 20.0 秒，给大模型充足的生成时间！
+def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3, timeout=20.0):
     try:
-        print(f"\n[{agent_name}] 正在思考中...")
+        print(f"\n[{agent_name}] 正在思考中 (允许最长等待 {timeout} 秒)...")
         api_key = "b8a447348756415ca41e21d50dfd7984.HmPlU26ZFtipn5La"
 
         client = OpenAI(
@@ -52,7 +53,8 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3,
         else:
             return None
     except Exception as e:
-        print(f"[{agent_name}] 调用失败: {e}")
+        # 如果你能在控制台看到这行红字，说明 API 报错了
+        print(f"[{agent_name}] ❌ 调用失败，触发保底机制: {e}")
         return None
 
 def get_session(code):
@@ -156,7 +158,8 @@ def join():
           "systemRule": "你现在心里有点着急哦，请由{who}先发言吧。"
         }
         """
-        scenario_res = call_agent(agent1_prompt, "请生成儿童冲突剧本。", agent_name="场控 Agent", temperature=0.7)
+        # 放宽超时时间到 25 秒，保证长剧本能生成完
+        scenario_res = call_agent(agent1_prompt, "请随机生成一个全新的儿童冲突剧本。", agent_name="场控 Agent", temperature=0.8, timeout=25.0)
 
         if scenario_res:
             for key in ["storyA", "storyB", "title", "systemRule", "objective_fact"]:
@@ -171,7 +174,7 @@ def join():
             session["scenario"] = scenario_res
         else:
             session["scenario"] = {
-                "title": "自然课上的植物标本",
+                "title": "自然课上的植物标本（网络超时保底剧本）",
                 "objective_fact": "B看到一阵风快把A的标本吹跑了，想帮忙按住，却不小心压碎了。",
                 "storyA": "今天下午的自然课上，老师让我们在操场收集树叶做标本。我刚拼出一只漂亮的树叶蝴蝶放在椅子上晾干。回头就看到B一巴掌拍在我的树叶蝴蝶上，标本瞬间全碎了！我快气哭了，B绝对是故意的，就是嫉妒我！",
                 "storyB": "今天下午的自然课上，我抬头发现突然刮起一阵风，A放在长椅上的树叶蝴蝶马上要被吹跑了。我急忙冲过去想用手帮A按住。结果跑得太急没控制好力气，一巴掌把树叶压碎了。我真的是想帮忙的，但A现在红着眼睛瞪着我，我好委屈。",
@@ -206,7 +209,6 @@ def send_message():
     if session["freeze"]["phase"] == "rephrase":
         session["freeze"]["phase"] = "negotiate"
         session["chat"].append({"id": f"m_{time.time()}", "kind": "chat", "from": role, "text": text})
-        # 【修复点 1】：重新表达后，不再说“误会解除了”，而是表扬进步并进入解决问题阶段
         session["chat"].append({"id": f"sys_{time.time()}_neg_start", "kind": "system", "text": "精灵小提示：这次的表达有了很大的进步，听起来舒服多了！现在请你们就事论事，一起商量个解决办法吧。商量好后点击上方的【我们商量好了】哦。", "meta": "negotiate"})
     elif session["freeze"]["phase"] not in ["rephrase", "finished"] and not session["freeze"]["active"]:
         
@@ -226,7 +228,7 @@ def send_message():
 
         严格返回纯 JSON：{{"is_hostile": true/false}}
         """
-        detect_res = call_agent(agent2_prompt, f"最新发言：[{text}]", agent_name="监听 Agent", temperature=0.1)
+        detect_res = call_agent(agent2_prompt, f"最新发言：[{text}]", agent_name="监听 Agent", temperature=0.1, timeout=12.0)
 
         is_hostile = False
         if detect_res and "is_hostile" in detect_res:
@@ -281,7 +283,6 @@ def submit_freeze():
         triggered_by = session["freeze"]["triggeredBy"]
         receiver = "B" if triggered_by == "A" else "A"
         
-        # 提取客观事实用于就事论事
         scenario_title = session["scenario"].get("title", "")
         objective_fact = session["scenario"].get("objective_fact", "")
 
@@ -295,9 +296,6 @@ def submit_freeze():
                 "triggeredBy": triggered_by
             }
         else:
-            # =================================================================
-            # 【修复点 2】：强制注入“客观事实真相”，引导必须详细、就事论事！
-            # =================================================================
             agent34_prompt = f"""
             你同时扮演【裁判Agent】和【引导Agent】，是一只极具共情能力、充满智慧的儿童心理专家“法官精灵”。
             当前情境：{scenario_title}
@@ -316,12 +314,12 @@ def submit_freeze():
             语气必须温柔、童趣。必须结合【核心客观事实真相】，详细地进行分析，每段字数在60-80字左右！不能只说套话！
             
             - `guidance` (给发火方的悄悄话)：
-              1. 共情：肯定TA因为遭受损失而生气的合理性（比如“看到标本碎了肯定很着急”）。
-              2. 揭示真相（就事论事）：结合【客观事实真相】，告诉TA对方其实是出于好意（比如“他其实是想帮你挡风”）。
+              1. 共情：肯定TA因为遭受损失而生气的合理性。
+              2. 揭示真相（就事论事）：结合【客观事实真相】，告诉TA对方其实是出于好意。
               3. 引导：鼓励TA用“我希望/我需要”重新表达感受，不要贴标签。
               
             - `comfort` (给被指责方的安抚)：
-              1. 共情：肯定TA被误会后的委屈（“好心帮忙却被当成坏人，确实很委屈”）。
+              1. 共情：肯定TA被误会后的委屈。
               2. 解释（就事论事）：解释发火方只是因为损失太着急了，没看到你的本来目的。
               3. 安抚：耐心等待对方重新表达。
 
@@ -335,7 +333,7 @@ def submit_freeze():
             }}
             """
 
-            judge_res = call_agent(agent34_prompt, "请结合客观事实详细打分并生成引导！", agent_name="裁判&引导 Agent", temperature=0.3)
+            judge_res = call_agent(agent34_prompt, "请结合客观事实详细打分并生成引导！", agent_name="裁判&引导 Agent", temperature=0.3, timeout=25.0)
 
             if judge_res:
                 try:
@@ -379,7 +377,6 @@ def submit_freeze():
         session["chat"].append({"id": f"judge_{time.time()}", "kind": "judgeCard", "extra": result})
 
         if result["route"] == "rephrase":
-            # 配合更加详细的卡片提示，修改这里的短提示
             session["chat"].append({"id": f"sys_{time.time()}_guide", "kind": "system", "text": "精灵小提示：请看看上面卡片里的悄悄话，试着换一种温柔的方式重新说一句话吧。", "meta": "rephrase", "target": triggered_by})
             session["chat"].append({"id": f"sys_{time.time()}_comfort", "kind": "system", "text": "精灵悄悄话：对方正在整理语言，请耐心等待哦。", "meta": "rephrase", "target": receiver})
         else:
