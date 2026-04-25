@@ -10,7 +10,7 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=120" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=125" />
 
     <style>
       /* ==========================================
@@ -133,10 +133,10 @@
       .contextCard .systemNotice { background: #FEF9C3 !important; border: 2px dashed #F59E0B !important; color: #B45309 !important; padding: 12px 16px !important; border-radius: 16px !important; font-weight: 700 !important; font-size: 15px !important; margin: 0 16px !important; box-shadow: none !important; }
 
       /* ==========================================
-         【8. 强迫症修复：思考动画完美居中留白】
+         【8. 强迫症修复：思考动画向下沉，贴近输入框】
          ========================================== */
       .chatCard .chat { 
-          padding: 24px 24px 16px 24px !important; 
+          padding: 24px 24px 8px 24px !important; /* 减小底部 padding */
           background: #FFFFFF !important; 
       }
       
@@ -156,7 +156,8 @@
           gap: 8px !important; 
           width: fit-content; 
           font-size: 14px;
-          margin: 0 auto 16px auto !important; 
+          /* 核心修改：大幅度增加上边距，缩小下边距，让它完美贴合底部的蓝色框区 */
+          margin: 24px auto 8px auto !important; 
       }
       .typing-indicator.active { display: flex; }
       .dots { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px;}
@@ -211,23 +212,10 @@
       .msg--right .msg-content-wrap { align-items: flex-end; }
       .bubble { display: inline-block; max-width: 100%; word-break: break-word; text-align: left; padding: 12px 16px; font-size: 16px; font-weight: 600; line-height: 1.6;}
       
-      /* 修复：将匹配度卡片限制最大宽度，不再像报错弹窗一样撑满全屏 */
-      .heart-match-container { 
-          padding: 20px 24px; 
-          text-align: center; 
-          margin: 10px 0; 
-          position: relative; 
-          display: block; 
-          width: 100%; 
-          max-width: 460px; /* 核心：限制宽度 */
-          box-sizing: border-box; 
-          transition: all 0.3s ease; 
-          border: 3px solid #1E293B !important;
-          border-radius: 20px !important;
-      }
+      .heart-match-container { padding: 20px 24px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; max-width: 460px; box-sizing: border-box; transition: all 0.3s ease; border: 3px solid #1E293B !important; border-radius: 20px !important;}
       .heart-track { position: relative; height: 48px; margin: 20px 0 36px 0; }
       .heart { position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; display: flex; align-items: center; justify-content: center;}
-      .match-text { font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 8px; } /* 缩小一点字体 */
+      .match-text { font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
       .match-subtext { font-size: 16px; font-weight: 700; margin-bottom: 24px; }
     </style>
   </head>
@@ -465,6 +453,7 @@
         let syncInterval = null;
         let currentSessionData = null;
         
+        // 核心修复：自动转换中文字符双引号
         function toChineseQuotes(str) {
             if (!str) return str;
             return str.replace(/['‘]([^'‘’]+?)['’]/g, "“$1”");
@@ -771,7 +760,7 @@
                   const finalReport = session.freeze.finalReport || {
                       praise: "你们展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
                       growth: "你们学会了“停下来想一想”，并勇敢说出了感受，这就是最大的成长！",
-                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用正确的话语来表达哦！"
+                      tip: "下次再遇到让你生气的事情，记得先深呼吸，用“我希望...”来表达哦！"
                   };
                   $("finalPraise").textContent = toChineseQuotes(finalReport.praise);
                   $("finalGrowth").textContent = toChineseQuotes(finalReport.growth);
