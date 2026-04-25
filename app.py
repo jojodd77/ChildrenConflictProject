@@ -23,7 +23,6 @@ UPSTASH_TOKEN = "AZ3JAAIncDFkZTI3YTc0N2VlZmM0ZGM2OTY2ZDYxNmRiNDUyNjAxNXAxNDAzOTM
 # 本地内存保底
 sessions_db = {}
 
-# 【核心修复】：默认超时时间从 7.0 秒提升到 20.0 秒，给大模型充足的生成时间！
 def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3, timeout=20.0):
     try:
         print(f"\n[{agent_name}] 正在思考中 (允许最长等待 {timeout} 秒)...")
@@ -53,7 +52,6 @@ def call_agent(system_prompt, user_message, agent_name="Agent", temperature=0.3,
         else:
             return None
     except Exception as e:
-        # 如果你能在控制台看到这行红字，说明 API 报错了
         print(f"[{agent_name}] ❌ 调用失败，触发保底机制: {e}")
         return None
 
@@ -134,31 +132,35 @@ def join():
     session["participants"][role] = True
 
     if session["scenario"] is None:
+        # =================================================================
+        # 【核心修改 1】：场控大模型指令升级，强制精简字数、严禁造名字
+        # =================================================================
         agent1_prompt = """
         你是一个【场控Agent】，负责为7-11岁儿童生成具有丰富背景细节的社交冲突剧本。
 
         【核心结构：敌意归因偏误】
-        1. 丰富的前情提要：交代清楚时间、地点、他们在干什么。
+        1. 简短提要：交代清楚时间、地点、他们在干什么。
         2. 突发意外：发生了一件让A受损失的倒霉事。
         3. B的真实意图：B其实是好意或无意。
         4. 造成误会的动作：B在现场做了一个动作，让A恰好抓到了“把柄”。
         5. A的误解与情绪：A认定B是故意的，心里非常生气。
 
-        【绝对禁令】
-        - storyA 必须完全代入A的视角！只能用“我”代表自己，用“B”代表对方。
-        - storyB 必须完全代入B的视角！只能用“我”代表自己，用“A”代表对方。
+        【绝对禁令（严守！）】
+        - 极简字数：为了减轻儿童阅读负担，storyA 和 storyB 必须精简，控制在 50-70 字左右！言简意赅。
+        - 绝对禁名：绝对不要给角色起任何名字（如小明、小红等）！
+        - 视角限定：storyA 必须完全代入A的视角，只能用“我”代表自己，“B”代表对方。
+        - 视角限定：storyB 必须完全代入B的视角，只能用“我”代表自己，“A”代表对方。
         - 绝不能写出双方吵架的对话！在生气和委屈这一刻戛然而止。
 
         严格只返回JSON格式：
         {
           "title": "场景标题",
           "objective_fact": "客观事实",
-          "storyA": "今天...（A的视角）",
-          "storyB": "今天...（B的视角）",
+          "storyA": "今天...（A的视角，50字左右）",
+          "storyB": "今天...（B的视角，50字左右）",
           "systemRule": "你现在心里有点着急哦，请由{who}先发言吧。"
         }
         """
-        # 放宽超时时间到 25 秒，保证长剧本能生成完
         scenario_res = call_agent(agent1_prompt, "请随机生成一个全新的儿童冲突剧本。", agent_name="场控 Agent", temperature=0.8, timeout=25.0)
 
         if scenario_res:
@@ -173,11 +175,12 @@ def join():
             
             session["scenario"] = scenario_res
         else:
+            # 兜底剧本也进行了相应的字数精简
             session["scenario"] = {
                 "title": "自然课上的植物标本（网络超时保底剧本）",
                 "objective_fact": "B看到一阵风快把A的标本吹跑了，想帮忙按住，却不小心压碎了。",
-                "storyA": "今天下午的自然课上，老师让我们在操场收集树叶做标本。我刚拼出一只漂亮的树叶蝴蝶放在椅子上晾干。回头就看到B一巴掌拍在我的树叶蝴蝶上，标本瞬间全碎了！我快气哭了，B绝对是故意的，就是嫉妒我！",
-                "storyB": "今天下午的自然课上，我抬头发现突然刮起一阵风，A放在长椅上的树叶蝴蝶马上要被吹跑了。我急忙冲过去想用手帮A按住。结果跑得太急没控制好力气，一巴掌把树叶压碎了。我真的是想帮忙的，但A现在红着眼睛瞪着我，我好委屈。",
+                "storyA": "自然课上我刚拼好一只漂亮的树叶蝴蝶。一回头，竟看到B一巴掌拍在上面，标本全碎了！我快气哭了，B绝对是故意的！",
+                "storyB": "自然课上突然刮起大风，A的树叶蝴蝶要被吹跑了。我赶紧冲过去想帮忙按住，却没控制好力气，一巴掌压碎了标本。我真的是想帮忙的，好委屈。",
                 "systemRule": "你现在心里有点着急哦，请由A先发言吧。"
             }
 
