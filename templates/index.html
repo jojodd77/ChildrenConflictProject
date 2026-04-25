@@ -10,7 +10,7 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=105" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=110" />
 
     <style>
       /* ==========================================
@@ -42,7 +42,7 @@
       .card, .bubble, .avatar, .input, .textarea, .btn, .chip, .presence, 
       .hero__image, .modal__panel, .pause-box, 
       .report-card-super, .super-tip-box, .heart-match-container, 
-      .quote-box, #modalClose, .typing-indicator, .modal-mic-container,
+      .quote-box, #modalClose, .modal-mic-container,
       .btn-sound, .super-btn {
           box-shadow: none !important;
           border: 3px solid #1E293B !important;
@@ -125,40 +125,29 @@
       .btn-sound.playing { background: #FDE047; }
 
       /* ==========================================
-         【7. 情境卡片美化排版】
+         【7. 情境卡片排版】
          ========================================== */
       .contextCard { padding: 16px 0 !important; background: #FFFFFF !important; }
-      .contextCard .card__title {
-          padding: 0 24px 12px 24px !important;
-          border-bottom: none !important;
-          background: transparent !important;
-      }
-      .contextCard .story {
-          border: 2px dashed #CBD5E1 !important; 
-          border-radius: 16px !important;
-          padding: 16px 24px !important;
-          margin: 0 16px 16px 16px !important; 
-          font-size: 16px !important;
-          font-weight: 600 !important;
-          line-height: 1.8 !important;
-          color: #334155 !important;
-          background: transparent !important;
-      }
-      .contextCard .systemNotice {
-          background: #FEF9C3 !important; 
-          border: 2px dashed #F59E0B !important; 
-          color: #B45309 !important;
-          padding: 12px 16px !important;
-          border-radius: 16px !important;
-          font-weight: 700 !important;
-          font-size: 15px !important;
-          margin: 0 16px !important;
-          box-shadow: none !important;
-      }
+      .contextCard .card__title { padding: 0 24px 12px 24px !important; border-bottom: none !important; background: transparent !important; }
+      .contextCard .story { border: 2px dashed #CBD5E1 !important; border-radius: 16px !important; padding: 16px 24px !important; margin: 0 16px 16px 16px !important; font-size: 16px !important; font-weight: 600 !important; line-height: 1.8 !important; color: #334155 !important; background: transparent !important; }
+      .contextCard .systemNotice { background: #FEF9C3 !important; border: 2px dashed #F59E0B !important; color: #B45309 !important; padding: 12px 16px !important; border-radius: 16px !important; font-weight: 700 !important; font-size: 15px !important; margin: 0 16px !important; box-shadow: none !important; }
 
       /* ==========================================
-         【8. 思考动画修复：清除幽灵间距，完美居中】
+         【8. 强迫症修复：紧凑的聊天区与输入框】
+         大幅压缩底部多余间距，防止把输入框挤下去
          ========================================== */
+      .chatCard .chat { 
+          padding: 20px 24px 4px 24px !important; /* 核心：底部内边距压缩到极限 4px */
+          background: #FFFFFF !important; 
+      }
+      
+      .typing-indicator-wrapper {
+          display: flex; 
+          justify-content: center; 
+          width: 100%; 
+          padding: 0 0 12px 0 !important; /* 核心：去掉顶部所有多余边距，仅保留底部少量缝隙 */
+          background: transparent !important;
+      }
       .typing-indicator { 
           display: none; 
           padding: 6px 16px 6px 8px !important; 
@@ -168,7 +157,7 @@
           gap: 8px !important; 
           width: fit-content; 
           font-size: 14px;
-          margin: 8px auto 16px auto !important; /* 调整间距，不让输入框太靠下 */
+          margin: 0 !important; 
       }
       .typing-indicator.active { display: flex; }
       .dots { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px;}
@@ -331,10 +320,10 @@
 
                 <div class="chat" id="chatLog" aria-live="polite"></div>
 
-                <div style="padding: 0 16px; display: flex; justify-content: center; width: 100%; box-sizing: border-box;">
+                <div class="typing-indicator-wrapper">
                     <div class="typing-indicator" id="typingIndicator">
-                       <div class="avatar avatar--j" style="width: 24px; height: 24px; min-width: 24px; border: 2px solid #1E293B !important;">
-                           <i class="ph-bold ph-robot" style="color: #064E3B !important; font-size: 14px !important;"></i>
+                       <div class="avatar avatar--j" style="width: 28px; height: 28px; min-width: 28px; border: 2px solid #1E293B !important;">
+                           <i class="ph-bold ph-robot" style="color: #064E3B !important; font-size: 16px !important;"></i>
                        </div>
                        <div style="display: flex; align-items: center; font-weight: 700; font-size: 14px;">
                            法官精灵正在思考... 
@@ -612,7 +601,7 @@
 
             const pos = (matchPercent / 100) * 40;
             
-            // 修复强迫症：喇叭完美放在框体外部，且使用纯正中文双引号
+            // 修复：喇叭完美放在框体外部，且使用纯正中文双引号
             const guidanceText = result.guidance ? toChineseQuotes(result.guidance) : '';
             const comfortText = result.comfort ? toChineseQuotes(result.comfort) : '';
 
@@ -810,10 +799,24 @@
           } catch (e) { globalLoading.setAttribute("aria-hidden", "true"); alert("网络错误"); }
         }
 
+        // 核心交互体验修复：点击发送或提交后，自动平滑滚到底部，确保输入框永远可见
         btnChooseA.onclick = () => join("A"); btnChooseB.onclick = () => join("B"); btnNewSession.onclick = () => sessionCodeInput.value = randomCode();
-        btnSend.onclick = async () => { const text = composerInput.value.trim(); if (!text) return; composerInput.value = ""; $("typingIndicator").classList.add("active"); await fetch('/api/send_message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text }) }); };
+        btnSend.onclick = async () => { 
+            const text = composerInput.value.trim(); if (!text) return; 
+            composerInput.value = ""; 
+            $("typingIndicator").classList.add("active"); 
+            setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 50);
+            await fetch('/api/send_message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text }) }); 
+        };
         composerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (!btnSend.disabled) btnSend.click(); } });
-        modalSubmit.onclick = async () => { const text = modalText.value.trim(); if (!text) return alert("要说点什么才能提交哦！"); modal.setAttribute("aria-hidden", "true"); modalText.value = ""; $("typingIndicator").classList.add("active"); await fetch('/api/submit_freeze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text, mode: modal.dataset.mode }) }); };
+        
+        modalSubmit.onclick = async () => { 
+            const text = modalText.value.trim(); if (!text) return alert("要说点什么才能提交哦！"); 
+            modal.setAttribute("aria-hidden", "true"); modalText.value = ""; 
+            $("typingIndicator").classList.add("active"); 
+            setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 50);
+            await fetch('/api/submit_freeze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: appState.code, role: appState.role, text, mode: modal.dataset.mode }) }); 
+        };
         modalClose.onclick = modalCancel.onclick = () => { modal.setAttribute("aria-hidden", "true"); modalText.value=""; }
         
         btnAgree.onclick = async () => { 
