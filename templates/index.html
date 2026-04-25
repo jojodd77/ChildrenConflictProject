@@ -10,7 +10,7 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=78" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=85" />
 
     <style>
       /* ==========================================
@@ -28,12 +28,14 @@
       .celeb-icon i[class^="ph-"] { font-size: 80px !important; margin-right: 0 !important; }
       .heart-track i[class^="ph-"] { font-size: 40px !important; margin-right: 0 !important; }
       #modalClose i[class^="ph-"] { font-size: 16px !important; margin-right: 0 !important; vertical-align: 0 !important;}
+      
+      .btn-sound-light i[class^="ph-"] { margin-right: 0 !important; vertical-align: 0 !important; }
 
       /* ==========================================
          【1. 终极统一规范：全量去阴影 + 统一3px外描边】
          ========================================== */
       .card, .bubble, .avatar, .input, .textarea, .btn, .chip, .presence, 
-      .systemNotice, .hero__image, .modal__panel, .pause-box, 
+      .hero__image, .modal__panel, .pause-box, 
       .report-card-super, .super-tip-box, .heart-match-container, 
       .quote-box, #modalClose, .typing-indicator, .modal-mic-container,
       .btn-sound, .super-btn {
@@ -47,14 +49,21 @@
       .divider { border-top: 2px dashed #E2E8F0 !important; border-bottom: none !important; margin: 16px 0 !important; background: transparent !important; height: 0 !important; }
       .brand__logo { border: none !important; box-shadow: none !important; }
       .btn:active, .btn-sound:active, #modalClose:active, .super-btn:active { transform: scale(0.94) !important; }
+      
+      /* 修复强迫症1：干掉右下角的缩放小三角 */
       .input:focus, .textarea:focus { outline: none; background-color: #F8FAFC; }
+      .textarea { resize: none !important; } 
+
+      .btn-sound-light { border: none !important; background: transparent !important; padding: 0 !important; cursor: pointer; transition: transform 0.15s ease !important; outline: none; display: flex; align-items: center; justify-content: center;}
+      .btn-sound-light:active { transform: scale(0.85) !important; }
 
       /* ==========================================
          【2. 圆角统一规范 (Design System)】
          ========================================== */
       .card, .modal__panel, .pause-box, .report-card-super { border-radius: 24px !important; }
       .bubble, .heart-match-container, .quote-box, .modal-mic-container, .super-tip-box { border-radius: 20px !important; }
-      .btn--read, .typing-indicator, .super-btn, #modalCancel, #modalSubmit { border-radius: 16px !important; }
+      .btn--read, .super-btn, #modalCancel, #modalSubmit { border-radius: 16px !important; }
+      .typing-indicator { border-radius: 24px !important; } /* 配合圆头像更协调 */
       .composer__row .input, .composer__row .btn--primary { border-radius: 32px !important; }
       .avatar, .btn--mic, .btn-sound, #modalClose { border-radius: 50% !important; }
 
@@ -71,7 +80,6 @@
       .brand__logo { width: 48px; height: 48px; object-fit: contain; } 
       .brand__title { font-size: 20px; font-weight: 900; color: #1E293B; }
       
-      /* 新增：顶部导航栏右侧对齐修复 */
       .topbar__right { display: flex; align-items: center; gap: 12px; }
       .chip { display: flex; align-items: center; height: 36px; padding: 0 16px; box-sizing: border-box; margin: 0;}
       #btnReset { display: flex; align-items: center; height: 36px; padding: 0 16px; box-sizing: border-box; margin: 0; }
@@ -81,10 +89,7 @@
          ========================================== */
       .modal.loadingOverlay { position: fixed; inset: 0; z-index: 10001; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; pointer-events: none; border: none !important; }
       .modal.loadingOverlay[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
-      
-      /* 强制使用 3D 闪星星 emoji */
       .magic-spinner { font-size: 80px; animation: magicWand 2.5s infinite linear; margin-bottom: 24px; line-height: 1; display: flex; align-items: center; justify-content: center;}
-      
       .loading-text { font-size: 18px; font-weight: 700; color: #D97706; text-align: center; }
       @keyframes magicWand { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
 
@@ -116,21 +121,44 @@
       .btn-sound.playing { background: #FDE047; }
 
       /* ==========================================
-         【6. 各大容器排版与对齐】
+         【6. 彻底消灭框套框：高级感排版】
          ========================================== */
-      .heart-match-container { padding: 20px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; transition: all 0.3s ease; }
-      .heart-track { height: 60px; position: relative; display: flex; align-items: center; justify-content: center; }
-      .heart { position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; display: flex; align-items: center; justify-content: center;}
-      .heart-left { left: 0%; color: #3B82F6; }
-      .heart-right { right: 0%; color: #EC4899; }
-      .match-text { font-size: 24px; font-weight: 900; margin-top: 10px; }
-      .match-subtext { font-size: 16px; font-weight: 700; margin-top: 5px; margin-bottom: 15px; }
+      .contextCard .story {
+          border: none !important;
+          background: transparent !important;
+          padding: 8px 0 !important;
+          font-size: 16px !important;
+          line-height: 1.8 !important;
+          color: #1E293B !important;
+      }
+      .contextCard .systemNotice {
+          border: none !important;
+          background: #FEF08A !important;
+          color: #92400E !important;
+          padding: 12px 16px !important;
+          border-radius: 12px !important;
+          font-weight: 700 !important;
+          font-size: 15px !important;
+          box-shadow: none !important;
+          margin-top: 8px !important;
+      }
 
-      .typing-indicator { display: none; padding: 12px 16px; background: #FEF3C7; font-size: 14px; color: #B45309; align-items: center; gap: 8px; width: fit-content; margin: 10px 0; }
+      .heart-match-container { padding: 24px 32px; text-align: center; margin: 10px 0; position: relative; display: block; width: 100%; box-sizing: border-box; transition: all 0.3s ease; }
+      .heart-track { position: relative; height: 48px; margin: 20px 0 36px 0; }
+      .heart { position: absolute; transition: left 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), right 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 5; display: flex; align-items: center; justify-content: center;}
+      .match-text { font-size: 40px; font-weight: 900; line-height: 1; margin-bottom: 8px; }
+      .match-subtext { font-size: 16px; font-weight: 700; margin-bottom: 24px; }
+
+      /* 修复强迫症2：打字动画完美居中 */
+      .typing-indicator { display: none; padding: 8px 16px 8px 8px; background: #FEF3C7; color: #B45309; align-items: center; gap: 12px; width: fit-content; margin: 10px 0; }
       .typing-indicator.active { display: flex; }
-      .dots span { display: inline-block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+      .dots { display: inline-flex; align-items: center; gap: 4px; margin-left: 4px;}
+      .dots span { display: block; width: 6px; height: 6px; background: #B45309; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
       .dots span:nth-child(1) { animation-delay: -0.32s; } .dots span:nth-child(2) { animation-delay: -0.16s; }
 
+      /* ==========================================
+         【7. 各大弹窗排版】
+         ========================================== */
       #modal .modal__panel { padding: 0 !important; background: #F8FAFC !important; overflow: hidden; max-width: 500px !important; }
       #modal .modal__header { background: #6EE7B7 !important; padding: 16px 24px !important; display: flex; justify-content: space-between; align-items: center; }
       #modal .modal__title { color: #1E293B !important; font-weight: 900 !important; font-size: 20px !important; }
@@ -160,9 +188,8 @@
       .super-btn-primary { background: #818CF8; color: #1E293B; }
 
       /* ==========================================
-         【7. 聊天气泡对齐与外置喇叭】
+         【8. 聊天气泡对齐】
          ========================================== */
-      /* 新增：外层包裹器，用于水平排列气泡和外置喇叭 */
       .msg-container { display: flex; align-items: center; gap: 8px; max-width: 100%; }
       .msg--right .msg-container { flex-direction: row-reverse; }
 
@@ -201,7 +228,9 @@
                 对方现在正在法官精灵的帮助下，重新组织语言。<br>
                 我们耐心等等看，换一种温柔的说法，是不是更能解决问题呢？
             </p>
-            <div style="color: #2563EB; font-weight: 900; display:flex; align-items:center; justify-content:center;"><i class="ph-bold ph-spinner-gap" style="animation: spin 1s linear infinite;"></i> 等待对方重新发送消息...</div>
+            <div style="color: #2563EB; font-weight: 900; display:flex; align-items:center; justify-content:center; gap: 8px;">
+                <i class="ph-bold ph-spinner-gap" style="animation: spin 1s linear infinite;"></i> 等待对方重新发送消息...
+            </div>
         </div>
     </div>
 
@@ -284,7 +313,10 @@
                        <div class="avatar avatar--j">
                            <i class="ph-bold ph-robot" style="color: #064E3B !important;"></i>
                        </div>
-                       法官精灵正在努力思考中... <div class="dots"><span></span><span></span><span></span></div>
+                       <div style="display: flex; align-items: center; font-weight: 600; font-size: 15px;">
+                           法官精灵正在努力思考中... 
+                           <div class="dots"><span></span><span></span><span></span></div>
+                       </div>
                     </div>
                 </div>
 
@@ -461,7 +493,15 @@
             
             if(btnElement) { 
                 if (!btnElement.dataset.origText) btnElement.dataset.origText = btnElement.innerHTML; 
-                btnElement.innerHTML = '<i class="ph-bold ph-pause"></i>'; 
+                
+                if (btnElement.classList.contains('btn-sound-light')) {
+                    btnElement.innerHTML = `<i class="ph-fill ph-pause-circle" style="font-size:28px; color:#D97706;"></i>`;
+                } else if (btnElement.classList.contains('btn-sound')) {
+                    btnElement.innerHTML = '<i class="ph-bold ph-pause"></i>';
+                } else {
+                    btnElement.innerHTML = '<i class="ph-bold ph-pause"></i> 正在朗读...';
+                }
+                
                 btnElement.classList.add('playing'); 
                 window.currentSpeakingBtn = btnElement; 
             }
@@ -533,26 +573,36 @@
 
         function renderHeartCard(result) {
             if (!result) return "";
-            const score = Math.max(0, Math.min(100, Math.round(result.misinterpretation * 100))); const matchPercent = 100 - score; const offset = (score / 2);
+            const score = Math.max(0, Math.min(100, Math.round(result.misinterpretation * 100))); 
+            const matchPercent = 100 - score; 
+            
             let theme = {}; let title = "";
-            if (matchPercent > 70) { title = "太棒了，你们的心贴得很近！"; theme = { bg: '#F0FDF4', text: '#047857', lightText: '#065F46' }; }
-            else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#FFFBEB', text: '#B45309', lightText: '#D97706' }; }
-            else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', text: '#B91C1C', lightText: '#DC2626' }; }
+            if (matchPercent > 70) { title = "太棒了，你们的心贴得很近！"; theme = { bg: '#F0FDF4', text: '#047857', lightText: '#065F46', track: '#34D399' }; }
+            else if (matchPercent > 30) { title = "有一点小误会，需要再靠近一点哦！"; theme = { bg: '#FFFBEB', text: '#B45309', lightText: '#D97706', track: '#FBBF24' }; }
+            else { title = "哎呀，你们的想法离得好远呀！危险！"; theme = { bg: '#FEF2F2', text: '#B91C1C', lightText: '#DC2626', track: '#F87171' }; }
 
-            const guidance = result.guidance ? `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.guidance)}', this)"><i class="ph-bold ph-speaker-high"></i></button><div style="flex:1; padding-top:4px;"><strong>给你的悄悄话：</strong>${result.guidance}</div></div>` : '';
-            const comfort = result.comfort ? `<div style="display:flex; align-items:flex-start; gap:8px; background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px;"><button class="btn-sound" onclick="window.speakText('${escapeHtml(result.comfort)}', this)"><i class="ph-bold ph-speaker-high"></i></button><div style="flex:1; padding-top:4px;"><strong>给对方的安抚：</strong>${result.comfort}</div></div>` : '';
+            const pos = (matchPercent / 100) * 40;
+
+            const guidance = result.guidance ? `<div style="display:flex; align-items:flex-start; gap:12px; margin-bottom: 8px; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 16px; border: 3px solid #1E293B;"><button class="btn-sound-light" onclick="window.speakText('${escapeHtml(result.guidance)}', this)" title="朗读悄悄话"><i class="ph-fill ph-speaker-high" style="font-size:28px; color:${theme.text};"></i></button><div style="flex:1; padding-top:3px; font-size:15px;"><strong>给你的悄悄话：</strong><br/>${result.guidance}</div></div>` : '';
+            const comfort = result.comfort ? `<div style="display:flex; align-items:flex-start; gap:12px; background: rgba(255,255,255,0.7); padding: 16px; border-radius: 16px; border: 3px solid #1E293B;"><button class="btn-sound-light" onclick="window.speakText('${escapeHtml(result.comfort)}', this)" title="朗读安抚"><i class="ph-fill ph-speaker-high" style="font-size:28px; color:${theme.text};"></i></button><div style="flex:1; padding-top:3px; font-size:15px;"><strong>给对方的安抚：</strong><br/>${result.comfort}</div></div>` : '';
 
             return `
               <div class="heart-match-container" style="background-color: ${theme.bg};">
-                <div style="font-size:14px; color:${theme.text}; margin-bottom:10px; font-weight:bold; display:flex; align-items:center; justify-content:center;"><i class="ph-bold ph-heart-straight"></i> 心心匹配度检测完成</div>
-                <div class="heart-track">
-                    <div class="heart heart-left" style="left: ${40 - offset}%"><i class="ph-fill ph-smiley"></i></div>
-                    <div class="heart heart-right" style="right: ${40 - offset}%"><i class="ph-fill ph-smiley"></i></div>
+                <div style="font-size:16px; color:${theme.text}; margin-bottom:24px; font-weight:900; display:flex; align-items:center; justify-content:center;"><i class="ph-fill ph-heart-straight"></i> 想法匹配度检测完成</div>
+                
+                <div class="heart-track" style="position:relative; height:48px; margin: 10px 10px 30px 10px;">
+                    <div style="position:absolute; top:50%; left:0; right:0; height:12px; background: white; border: 3px solid #1E293B; border-radius: 6px; transform: translateY(-50%); box-sizing:border-box;"></div>
+                    <div style="position:absolute; top:50%; left:0; width:calc(${pos}% + 12px); height:12px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 6px 0 0 6px; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
+                    <div style="position:absolute; top:50%; right:0; width:calc(${pos}% + 12px); height:12px; background: ${theme.track}; border: 3px solid #1E293B; border-radius: 0 6px 6px 0; transform: translateY(-50%); z-index:1; box-sizing:border-box;"></div>
+                    
+                    <div class="heart heart-left" style="left: ${pos}%; top:50%; transform:translate(-50%, -50%); width: 44px; height: 44px; background: #DBEAFE; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #1E3A8A; font-weight:900; font-size:18px; z-index:2;">A</div>
+                    <div class="heart heart-right" style="right: ${pos}%; top:50%; transform:translate(50%, -50%); width: 44px; height: 44px; background: #FEE2E2; border: 3px solid #1E293B; border-radius: 50%; display:flex; align-items:center; justify-content:center; color: #991B1B; font-weight:900; font-size:18px; z-index:2;">B</div>
                 </div>
-                <div class="match-text" style="color:${theme.text};">想法匹配度：${matchPercent}%</div>
-                <div class="match-subtext" style="color: ${theme.lightText};">${title}</div>
-                <hr class="divider">
-                <div style="text-align:left; font-size: 14px; color: ${theme.text}; line-height:1.6;">
+
+                <div class="match-text" style="color:${theme.text}; font-size:40px; line-height:1; font-weight:900;">${matchPercent}%</div>
+                <div class="match-subtext" style="color: ${theme.lightText}; margin-bottom:24px; font-size:16px;">${title}</div>
+                
+                <div style="text-align:left; font-size: 15px; color: #1E293B; line-height:1.6;">
                     ${appState.role === result.triggeredBy ? guidance : comfort}
                 </div>
               </div>
@@ -583,8 +633,6 @@
           } else {
             const bubbleClass = displayFrom === "A" ? "bubble--a" : displayFrom === "B" ? "bubble--b" : "bubble--j";
             const safeText = kind === "system" ? text : escapeHtml(text);
-            
-            // 修复：使用包裹器，将喇叭置于气泡外部，并与气泡水平排列
             contentWrap.innerHTML = `
                 <div class="msg-container">
                     <div class="bubble ${bubbleClass}">
@@ -663,7 +711,7 @@
           }
           else if (phase === "finished") {
               $("waitRephraseOverlay").setAttribute("aria-hidden", "true");
-              if ($celebrationOverlay.classList.contains("show") === false && finishModal.getAttribute("aria-hidden") === "true") {
+              if ($("celebrationOverlay").classList.contains("show") === false && finishModal.getAttribute("aria-hidden") === "true") {
                   
                   const finalReport = session.freeze.finalReport || {
                       praise: "你们展现出了超级厉害的倾听和表达能力，没有让愤怒控制自己！",
